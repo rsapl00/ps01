@@ -2,21 +2,26 @@ package com.safeway.app.ps01.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.Table;
 
 import lombok.Data;
 import lombok.NonNull;
 
+@Data
 @Entity
 @Table(name = "PSCYCSCH")
-@Data
+@IdClass(CycleScheduleId.class)
 public class CycleSchedule {
 
     @NonNull
+    @Id
     @Column(name = "DIV")
-    private String division;
+    private String divId;
 
     @NonNull
+    @Id
     @Column(name = "DAY_NUM")
     private String dayNum;
 
@@ -55,5 +60,7 @@ public class CycleSchedule {
     @NonNull
     @Column(name = "DFLT_RUN_2_OS_IND")
     private String defaultRunTwoOsInd;
+
+    public CycleSchedule() {}
 
 }
