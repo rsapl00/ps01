@@ -1,4 +1,4 @@
-package com.safeway.app.ps01.model;
+package com.safeway.app.ps01.controller.model;
 
 public enum RoleType {
     
@@ -35,6 +35,5 @@ public enum RoleType {
         }
 
         return roleType;
-    }
-    
+    }  
 }

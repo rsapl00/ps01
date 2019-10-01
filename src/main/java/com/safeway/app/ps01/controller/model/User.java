@@ -1,4 +1,4 @@
-package com.safeway.app.ps01.model;
+package com.safeway.app.ps01.controller.model;
 
 import lombok.Data;
 import lombok.NonNull;
