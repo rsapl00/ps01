@@ -1,6 +1,5 @@
 package com.safeway.app.ps01.util;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
