@@ -55,7 +55,7 @@ public class CycleChangeRequestService {
     private List<CycleChangeRequest> generateMissingCycleChangeDates(final  String divId, final Date startRunDate, final Date endRunDate) {
         // final List<CycleSchedule> defaultCycleSchedules = cycleScheduleRepository.findByDivIdOrderByDayNumAsc(divId);
 
-        return null;
+        return new ArrayList<>();
         
     }
 
