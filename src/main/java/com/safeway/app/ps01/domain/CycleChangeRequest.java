@@ -14,12 +14,14 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 /**
  * 
  */
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name="PSCYCREQ_TABLE")
 @IdClass(CycleChangeRequestId.class)
@@ -65,7 +67,7 @@ public class CycleChangeRequest {
 
     @NonNull
     @Column(name = "OFFSITE_IND")
-    private Character offsiteIndicator;
+    private String offsiteIndicator;
 
     @NonNull
     @Column(name = "CHG_STAT_NM")
@@ -92,5 +94,5 @@ public class CycleChangeRequest {
     @NonNull
     @Column(name = "EXPIRY_TS")
     private Timestamp expiryTimestamp;
-
+    
 }
