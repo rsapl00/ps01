@@ -77,9 +77,12 @@ public class CycleChangeRequestService {
 
         final List<CycleChangeRequest> newSchedules = new ArrayList<>();
 
-        for (LocalDate date = startRunDate.toLocalDate(); date
-                .isBefore(endRunDate.toLocalDate()); date = date.plusDays(1)) {
+        // Set the end date to end date + 1 so that the end date will be included in the generation.
+        final LocalDate afterEndRunDate = (endRunDate.toLocalDate()).plusDays(1);
 
+        for (LocalDate date = startRunDate.toLocalDate(); date
+                .isBefore(afterEndRunDate); date = date.plusDays(1)) {
+            
             final LocalDate currentDateInLoop = date;
 
             // Generate if the current date is not yet in Cycle Change Request

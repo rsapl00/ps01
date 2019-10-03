@@ -27,7 +27,8 @@ public final class DateUtil {
      */
     public static Date getEffectiveDate(final LocalDate startDate, final DayEnum effectiveDate) {
 
-        LocalDate start = startDate.plusDays(1); // NOTE: start date cannot be the effective date.
+        // LocalDate start = startDate.plusDays(1); // NOTE: start date cannot be the effective date.
+        LocalDate start = startDate;
 
         while (true) {
 

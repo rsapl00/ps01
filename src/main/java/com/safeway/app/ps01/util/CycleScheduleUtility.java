@@ -25,7 +25,7 @@ public final class CycleScheduleUtility {
     public static List<CycleChangeRequest> generateCycleChangeRequest(final CycleSchedule cycleSchedule,
             final LocalDate currentDateInLoop) {
 
-        List<CycleChangeRequest> cycleChangeRequests = new ArrayList<>();
+        final List<CycleChangeRequest> cycleChangeRequests = new ArrayList<>();
 
         // Compare by name: current date in loop to cycle schedule date
         if (DayEnum.getDayEnum(cycleSchedule.getDayNum())
