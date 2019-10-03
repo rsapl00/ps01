@@ -9,7 +9,7 @@ import com.safeway.app.ps01.domain.CycleChangeRequest;
 import com.safeway.app.ps01.domain.CycleSchedule;
 import com.safeway.app.ps01.repository.CycleChangeRequestRepository;
 import com.safeway.app.ps01.repository.CycleScheduleRepository;
-import com.safeway.app.ps01.util.CycleScheduleConverter;
+import com.safeway.app.ps01.util.CycleScheduleUtility;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,63 +21,77 @@ public class CycleChangeRequestService {
     private CycleChangeRequestRepository cycChangeReqRepository;
     private CycleScheduleRepository cycleScheduleRepository;
 
-    public CycleChangeRequestService(CycleChangeRequestRepository repository, CycleScheduleRepository cycleScheduleRepository) {
+    public CycleChangeRequestService(CycleChangeRequestRepository repository,
+            CycleScheduleRepository cycleScheduleRepository) {
         this.cycChangeReqRepository = repository;
         this.cycleScheduleRepository = cycleScheduleRepository;
     }
 
-    public List<CycleChangeRequest> findCycleChangeRequestByDivIdAndRunDate(String divId, Date startRunDate, Date endRunDate) {
+    /**
+     * 
+     * @param divId
+     * @param startRunDate
+     * @param endRunDate
+     * @return
+     */
+    public List<CycleChangeRequest> findCycleChangeRequestByDivIdAndRunDate(String divId, Date startRunDate,
+            Date endRunDate) {
         return cycChangeReqRepository.findByDivIdAndRunDateBetweenOrderByRunDateAsc(divId, startRunDate, endRunDate);
     }
 
+    /**
+     * 
+     * @param divId
+     * @param startRunDate
+     * @param endRunDate
+     * @return
+     */
+    @Transactional(readOnly = false)
     public List<CycleChangeRequest> generateCycleChangeRequest(String divId, Date startRunDate, Date endRunDate) {
 
         // retrieve cycle change requests by division and run date range.
-        final List<CycleChangeRequest> cycleChangeRequests = findCycleChangeRequestByDivIdAndRunDate(divId, startRunDate, endRunDate);
+        final List<CycleChangeRequest> cycleChangeRequests = findCycleChangeRequestByDivIdAndRunDate(divId,
+                startRunDate, endRunDate);
 
-        // check if there is a current record for cycle change request for the specified start and end run date.
-        // if there is no or incomplete record generate one.
-        // to generate new records, first get the base schedule of the division from PSCYCSCH table.
-        
-        // Generate default cycle change request if there's no record yet for the specified run dates.
-        if (cycleChangeRequests.isEmpty() || cycleChangeRequests == null) {
-            cycleChangeRequests.addAll(mapCycleScheduleToCycleChangeRequest(divId, startRunDate, endRunDate));
-        } else {
+        final List<CycleChangeRequest> newCycleChangeRequests = generateCycleChangeRequestBasedOnCycleSchedule(divId,
+                startRunDate, endRunDate, cycleChangeRequests);
 
-            // check if all run dates have records, if not, generate missing cycle change requests for the missing dates.
-            // loop through start date to end date while comparing it to the cycle change requests records.
-            cycleChangeRequests.addAll(generateMissingCycleChangeDates(divId, startRunDate, endRunDate));
-        }
+        saveCycleChangeRequests(newCycleChangeRequests);
 
-        return cycleChangeRequests;
+        return findCycleChangeRequestByDivIdAndRunDate(divId, startRunDate, endRunDate);
     }
 
-    private List<CycleChangeRequest> generateMissingCycleChangeDates(final  String divId, final Date startRunDate, final Date endRunDate) {
-        // final List<CycleSchedule> defaultCycleSchedules = cycleScheduleRepository.findByDivIdOrderByDayNumAsc(divId);
-
-        return new ArrayList<>();
-        
+    @Transactional(readOnly = false)
+    public List<CycleChangeRequest> saveCycleChangeRequests(List<CycleChangeRequest> cycleChangeRequests) {
+        return cycChangeReqRepository.saveAll(cycleChangeRequests);
     }
 
-    private List<CycleChangeRequest> mapCycleScheduleToCycleChangeRequest(final String divId, final Date startRunDate, final Date endRunDate) {
+    /**
+     * Generate Cycle Change Request base on the given date range. Skip generation
+     * if date is already exists in the database.
+     * 
+     */
+    private List<CycleChangeRequest> generateCycleChangeRequestBasedOnCycleSchedule(final String divId, final Date startRunDate,
+            final Date endRunDate, final List<CycleChangeRequest> cycleChangeRequests) {
         final List<CycleSchedule> defaultCycleSchedules = cycleScheduleRepository.findByDivIdOrderByDayNumAsc(divId);
 
-        final List<CycleChangeRequest> defaultSchedules = new ArrayList<>();
+        final List<CycleChangeRequest> newSchedules = new ArrayList<>();
 
-        for (LocalDate date = startRunDate.toLocalDate(); 
-                    date.isBefore(endRunDate.toLocalDate()); 
-                    date = date.plusDays(1) ) {
+        for (LocalDate date = startRunDate.toLocalDate(); date
+                .isBefore(endRunDate.toLocalDate()); date = date.plusDays(1)) {
 
             final LocalDate currentDateInLoop = date;
 
-            defaultCycleSchedules.stream().forEach(cycleSchedule -> {
-                defaultSchedules.addAll(CycleScheduleConverter.generateCycleChangeRequest(cycleSchedule, currentDateInLoop));
-            });            
+            // Generate if the current date is not yet in Cycle Change Request
+            if (!CycleScheduleUtility.isRunDateExists(currentDateInLoop, cycleChangeRequests)) {
+                defaultCycleSchedules.stream().forEach(cycleSchedule -> {
+                    newSchedules
+                            .addAll(CycleScheduleUtility.generateCycleChangeRequest(cycleSchedule, currentDateInLoop));
+                });
+            }
         }
 
-        return defaultSchedules;
+        return newSchedules;
     }
-
-    
 
 }

@@ -35,7 +35,7 @@ public final class DateUtil {
                 return java.sql.Date.valueOf(start);
             }
 
-            start.plusDays(1);
+            start = start.plusDays(1);
         }
     }
 }

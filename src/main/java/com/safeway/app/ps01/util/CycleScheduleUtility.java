@@ -1,5 +1,7 @@
 package com.safeway.app.ps01.util;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +14,14 @@ import com.safeway.app.ps01.domain.enums.CycleChangeRequestTypeEnum;
 import com.safeway.app.ps01.domain.enums.DayEnum;
 import com.safeway.app.ps01.domain.enums.RunSequenceEnum;
 
-public final class CycleScheduleConverter {
+public final class CycleScheduleUtility {
+    
+    public static boolean isRunDateExists(final LocalDate runDate, final List<CycleChangeRequest> cycleChangeRequests) {
+        return cycleChangeRequests.stream().anyMatch(change -> {
+            return change.getRunDate().equals(java.sql.Date.valueOf(runDate));
+        });
+    }
+    
     public static List<CycleChangeRequest> generateCycleChangeRequest(final CycleSchedule cycleSchedule,
             final LocalDate currentDateInLoop) {
 
@@ -32,11 +41,11 @@ public final class CycleScheduleConverter {
             // if Default Effective Date 1 and 2 is NOT 0 or has run date
             if (!defEffectiveDateOne.equals(DayEnum.NO_RUNDAY)) {
                 cycleChangeRequests.add(createCycleChangeRequest(cycleSchedule, currentDateInLoop, runDay,
-                        defEffectiveDateOne, offSiteOneInd));
+                        defEffectiveDateOne, offSiteOneInd, RunSequenceEnum.FIRST));
 
                 if (!defEffectiveDateTwo.equals(DayEnum.NO_RUNDAY)) {
                     cycleChangeRequests.add(createCycleChangeRequest(cycleSchedule, currentDateInLoop, runDay,
-                            defEffectiveDateTwo, offSiteTwoInd));
+                            defEffectiveDateTwo, offSiteTwoInd, RunSequenceEnum.SECOND));
                 }
             }
         }
@@ -46,7 +55,7 @@ public final class CycleScheduleConverter {
 
     private static CycleChangeRequest createCycleChangeRequest(final CycleSchedule cycleSchedule,
             final LocalDate currentDateInLoop, final DayEnum runDay, final DayEnum defEffectiveDate,
-            final String offsiteInd) {
+            final String offsiteInd, RunSequenceEnum sequence) {
 
         CycleChangeRequest schedule = new CycleChangeRequest();
 
@@ -54,10 +63,13 @@ public final class CycleScheduleConverter {
         schedule.setDivId(cycleSchedule.getDivId());
         schedule.setRunDate(java.sql.Date.valueOf(currentDateInLoop));
 
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        schedule.setCreateTimestamp(ts);
+
         schedule.setEffectiveDate(DateUtil.getEffectiveDate(currentDateInLoop, defEffectiveDate));
 
         schedule.setRequestDayName(runDay.getDayName());
-        schedule.setRunNumber(RunSequenceEnum.FIRST.getRunSequence());
+        schedule.setRunNumber(sequence.getRunSequence());
         schedule.setCycleChangeRequestType(CycleChangeRequestTypeEnum.BASE.getRequestType());
         schedule.setOffsiteIndicator(offsiteInd);
         schedule.setChangeStatusName(ChangeStatusEnum.BASE.getChangeStatus());
