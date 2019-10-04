@@ -5,6 +5,9 @@ import com.safeway.app.ps01.domain.CycleChangeRequest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
+import java.net.URISyntaxException;
+
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Component;
@@ -15,10 +18,11 @@ public class CycleChangeRequestResourceAssembler
 
     @Override
     public Resource<CycleChangeRequest> toResource(CycleChangeRequest cycleChangeRequest) {
-    
         return new Resource<>(cycleChangeRequest,
-                linkTo(methodOn(CycleChangeRequestController.class).getCycleChangeById(cycleChangeRequest.getId())).withSelfRel());
-
+                linkTo(methodOn(CycleChangeRequestController.class).getCycleChangeById(cycleChangeRequest.getId()))
+                        .withSelfRel(),
+                linkTo(methodOn(CycleChangeRequestController.class).getAllCycleChangeRequests())
+                        .withRel("cyclechanges"));
     }
 
 }

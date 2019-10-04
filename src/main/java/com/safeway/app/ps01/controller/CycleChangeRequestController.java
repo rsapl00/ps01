@@ -50,7 +50,7 @@ public class CycleChangeRequestController {
             @RequestBody CycleChangeSearchDTO cycleChange) {
 
         List<Resource<CycleChangeRequest>> cycleChanges = cycleChangeRequestService
-                .findCycleChangeRequestByDivIdAndRunDate(cycleChange.getDivisionId(), cycleChange.getStartDate(),
+                .generateCycleChangeRequest(cycleChange.getDivisionId(), cycleChange.getStartDate(),
                         cycleChange.getEndDate())
                 .stream().map(assembler::toResource).collect(Collectors.toList());
 
