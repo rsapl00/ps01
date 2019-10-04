@@ -1,6 +1,7 @@
 package com.safeway.app.ps01.validation;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -20,12 +21,20 @@ public class ChronologicalOrderDatehValidator implements ConstraintValidator<Chr
 
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {
-        Object start = new BeanWrapperImpl(value).getPropertyValue(startDate);
-        final LocalDate startDate = LocalDate.parse((CharSequence) start.toString());
 
-        Object end = new BeanWrapperImpl(value).getPropertyValue(endDate);
-        LocalDate endDate = LocalDate.parse((CharSequence) end.toString());
+        try {
+            Object start = new BeanWrapperImpl(value).getPropertyValue(startDate);
+            final LocalDate startDate = LocalDate.parse((CharSequence) start.toString());
+            
+            Object end = new BeanWrapperImpl(value).getPropertyValue(endDate);
+            LocalDate endDate = LocalDate.parse((CharSequence) end.toString());
 
-        return startDate.isBefore(endDate);
+            return startDate.isBefore(endDate);
+        } catch (Exception e) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate("Invalid  date. Date should be in yyyy-MM-dd pattern.").addConstraintViolation();
+            
+            return false;
+        }
     }
 }
