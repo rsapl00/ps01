@@ -30,6 +30,11 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
                 return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        /**
+         * Handles all Constraint validation exceptions for RequestBody parameters in Controllers.
+         * 
+         * Example: @RequestBody CycleChangeRequest
+         */
         @ResponseBody
         @Override
         protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
