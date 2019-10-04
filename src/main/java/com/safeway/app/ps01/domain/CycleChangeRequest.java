@@ -8,6 +8,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.safeway.app.ps01.validation.ChronologicalOrderDateConstraint;
@@ -47,17 +49,20 @@ public class CycleChangeRequest {
     private String corpId;
 
     @NotNull
+    @NotBlank
     @NonNull
     @Column(name = "DIV_ID")
     private String divId;
 
     @NonNull
+    @NotBlank
     @NotNull
     @Column(name = "RUN_DT")
     private Date runDate;
 
     @NonNull
     @NotNull
+    @NotBlank
     @Column(name = "EFF_DT")
     private Date effectiveDate;
 
