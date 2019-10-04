@@ -8,6 +8,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import com.safeway.app.ps01.validation.ChronologicalOrderDateConstraint;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -22,6 +25,13 @@ import lombok.NonNull;
  */
 @Data
 @NoArgsConstructor
+@ChronologicalOrderDateConstraint.List( {
+    @ChronologicalOrderDateConstraint(
+        startDate = "runDate",
+        endDate = "effectiveDate",
+        message = "Effective date should be later than run date."
+    )
+})
 @Entity
 @Table(name="PSCYCREQ_TABLE")
 public class CycleChangeRequest {
@@ -36,15 +46,18 @@ public class CycleChangeRequest {
     @Column(name = "CORP_ID")
     private String corpId;
 
+    @NotNull
     @NonNull
     @Column(name = "DIV_ID")
     private String divId;
 
     @NonNull
+    @NotNull
     @Column(name = "RUN_DT")
     private Date runDate;
 
     @NonNull
+    @NotNull
     @Column(name = "EFF_DT")
     private Date effectiveDate;
 
