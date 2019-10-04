@@ -1,6 +1,7 @@
 package com.safeway.app.ps01.exception;
 
 import java.util.Date;
+import java.util.List;
 
 public class HostPosExceptionResource extends RuntimeException {
 
@@ -11,9 +12,9 @@ public class HostPosExceptionResource extends RuntimeException {
     
     private Date timestamp;
     private String message;
-    private String details;
+    private List<String> details;
 
-    public HostPosExceptionResource(Date timestamp, String message, String details) {
+    public HostPosExceptionResource(Date timestamp, String message, List<String> details) {
         super(message);
         this.timestamp = timestamp;
         this.message = message;
@@ -28,7 +29,7 @@ public class HostPosExceptionResource extends RuntimeException {
         return message;
     }
 
-    public String getDetails() {
+    public List<String> getDetails() {
         return details;
     }
     
