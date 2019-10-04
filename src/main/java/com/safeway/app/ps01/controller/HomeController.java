@@ -1,7 +1,7 @@
 package com.safeway.app.ps01.controller;
 
-import com.safeway.app.ps01.controller.model.RoleType;
-import com.safeway.app.ps01.controller.model.User;
+import com.safeway.app.ps01.controller.resource.RoleType;
+import com.safeway.app.ps01.controller.resource.User;
 import com.safeway.app.ps01.service.CycleChangeRequestService;
 
 import org.springframework.stereotype.Controller;

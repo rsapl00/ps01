@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.Table;
@@ -24,31 +25,37 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Entity
 @Table(name="PSCYCREQ_TABLE")
-@IdClass(CycleChangeRequestId.class)
+// @IdClass(CycleChangeRequestId.class)
 public class CycleChangeRequest {
 
     @NonNull
     @Id
+    @GeneratedValue
+    @Column(name = "CYC_REQ_CHG_SK")
+    private Long id;
+
+    @NonNull
+    // @Id
     @Column(name = "CORP_ID")
     private String corpId;
 
     @NonNull
-    @Id
+    // @Id
     @Column(name = "DIV_ID")
     private String divId;
 
     @NonNull
-    @Id
+    // @Id
     @Column(name = "RUN_DT")
     private Date runDate;
 
     @NonNull
-    @Id
+    // @Id
     @Column(name = "EFF_DT")
     private Date effectiveDate;
 
     @NonNull
-    @Id
+    // @Id
     @Column(name = "CRT_TS")
     @CreatedDate
     private Timestamp createTimestamp;
