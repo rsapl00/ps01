@@ -24,7 +24,6 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Entity
 @Table(name="PSCYCREQ_TABLE")
-// @IdClass(CycleChangeRequestId.class)
 public class CycleChangeRequest {
 
     @NonNull
@@ -34,27 +33,22 @@ public class CycleChangeRequest {
     private Long id;
 
     @NonNull
-    // @Id
     @Column(name = "CORP_ID")
     private String corpId;
 
     @NonNull
-    // @Id
     @Column(name = "DIV_ID")
     private String divId;
 
     @NonNull
-    // @Id
     @Column(name = "RUN_DT")
     private Date runDate;
 
     @NonNull
-    // @Id
     @Column(name = "EFF_DT")
     private Date effectiveDate;
 
     @NonNull
-    // @Id
     @Column(name = "CRT_TS")
     @CreatedDate
     private Timestamp createTimestamp;

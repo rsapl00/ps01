@@ -5,12 +5,21 @@ import java.sql.Date;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.safeway.app.ps01.validation.CycleChangeSearchConstraint;
+
 import io.micrometer.core.lang.NonNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@CycleChangeSearchConstraint.List( {
+    @CycleChangeSearchConstraint(
+        startDate = "startDate",
+        endDate = "endDate",
+        message = "End date should be later than start date."
+    )
+})
 public class CycleChangeSearchDTO {
 
     @NonNull

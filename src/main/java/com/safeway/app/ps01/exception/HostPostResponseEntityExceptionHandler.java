@@ -38,7 +38,7 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
         List<String> errors = ex.getBindingResult().getFieldErrors().stream().map(x -> x.getDefaultMessage())
                 .collect(Collectors.toList());
 
-        HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(), ex.getMessage(), errors);
+        HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(), ex.getLocalizedMessage(), errors);
 
         return new ResponseEntity<>(exceptionResource, status);
     }

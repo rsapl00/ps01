@@ -8,6 +8,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import com.safeway.app.ps01.controller.resource.CycleChangeSearchDTO;
 import com.safeway.app.ps01.controller.resource.assembler.CycleChangeRequestResourceAssembler;
 import com.safeway.app.ps01.domain.CycleChangeRequest;
@@ -47,7 +49,7 @@ public class CycleChangeRequestController {
 
     @PostMapping("/cyclechanges")
     public Resources<Resource<CycleChangeRequest>> getCycleChangeByRunDateFromAndTo(
-            @RequestBody CycleChangeSearchDTO cycleChange) {
+            @Valid @RequestBody CycleChangeSearchDTO cycleChange) {
 
         List<Resource<CycleChangeRequest>> cycleChanges = cycleChangeRequestService
                 .generateCycleChangeRequest(cycleChange.getDivisionId(), cycleChange.getStartDate(),
