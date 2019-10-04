@@ -23,28 +23,28 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestController
 public class HostPostResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ResponseBody
-    @ExceptionHandler(Exception.class)
-    public final ResponseEntity<Object> handleAllException(Exception ex, WebRequest request) throws Exception {
+        @ResponseBody
+        @ExceptionHandler(Exception.class)
+        public final ResponseEntity<Object> handleAllException(Exception ex, WebRequest request) throws Exception {
 
-        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(), ex.getMessage(),
-                Arrays.asList(request.getDescription(false)));
+                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                                Arrays.asList(ex.getMessage()), request.getDescription(false));
 
-        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+                return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-    @ResponseBody
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+        @ResponseBody
+        @Override
+        protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                        HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        List<String> errors = ex.getBindingResult().getAllErrors().stream().map(x -> x.getDefaultMessage())
-                .collect(Collectors.toList());
+                List<String> errors = ex.getBindingResult().getAllErrors().stream().map(x -> x.getDefaultMessage())
+                                .collect(Collectors.toList());
 
-        HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(),
-                String.valueOf(ex.getBindingResult().getAllErrors().get(0)), errors);
+                HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(), errors,
+                                String.valueOf(ex.getBindingResult().getAllErrors().get(0)));
 
-        return new ResponseEntity<>(exceptionResource, status);
-    }
+                return new ResponseEntity<>(exceptionResource, status);
+        }
 
 }
