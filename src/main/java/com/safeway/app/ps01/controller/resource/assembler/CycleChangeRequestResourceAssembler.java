@@ -5,9 +5,6 @@ import com.safeway.app.ps01.domain.CycleChangeRequest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
-import java.net.URISyntaxException;
-
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.stereotype.Component;
