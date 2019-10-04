@@ -7,13 +7,13 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.beans.BeanWrapperImpl;
 
-public class CycleChangeSearchValidator implements ConstraintValidator<CycleChangeSearchConstraint, Object> {
+public class ChronologicalOrderDatehValidator implements ConstraintValidator<ChronologicalOrderDateConstraint, Object> {
 
     private String startDate;
     private String endDate;
 
     @Override
-    public void initialize(CycleChangeSearchConstraint constraintAnnotation) {
+    public void initialize(ChronologicalOrderDateConstraint constraintAnnotation) {
         this.startDate = constraintAnnotation.startDate();
         this.endDate = constraintAnnotation.endDate();
     }

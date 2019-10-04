@@ -8,10 +8,10 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-@Constraint(validatedBy = CycleChangeSearchValidator.class)
+@Constraint(validatedBy = ChronologicalOrderDatehValidator.class)
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CycleChangeSearchConstraint {
+public @interface ChronologicalOrderDateConstraint {
 
     String message() default "Start date should not be later than end date.";
 
@@ -22,7 +22,7 @@ public @interface CycleChangeSearchConstraint {
     @Target( {ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
     @interface List {
-        CycleChangeSearchConstraint[] value();
+        ChronologicalOrderDateConstraint[] value();
     }
 
     Class<?>[] groups() default {};

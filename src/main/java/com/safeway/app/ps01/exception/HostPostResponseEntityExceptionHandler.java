@@ -1,9 +1,12 @@
 package com.safeway.app.ps01.exception;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.validation.ConstraintViolationException;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,10 +38,11 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
             HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        List<String> errors = ex.getBindingResult().getFieldErrors().stream().map(x -> x.getDefaultMessage())
+        List<String> errors = ex.getBindingResult().getAllErrors().stream().map(x -> x.getDefaultMessage())
                 .collect(Collectors.toList());
 
-        HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(), ex.getLocalizedMessage(), errors);
+        HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(),
+                String.valueOf(ex.getBindingResult().getAllErrors().get(0)), errors);
 
         return new ResponseEntity<>(exceptionResource, status);
     }
