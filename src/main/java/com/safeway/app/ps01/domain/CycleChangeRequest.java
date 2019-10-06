@@ -54,14 +54,12 @@ public class CycleChangeRequest {
     private String divId;
 
     @NonNull
-    @NotBlank
     @NotNull
     @Column(name = "RUN_DT")
     private Date runDate;
 
     @NonNull
     @NotNull
-    @NotBlank
     @Column(name = "EFF_DT")
     private Date effectiveDate;
 

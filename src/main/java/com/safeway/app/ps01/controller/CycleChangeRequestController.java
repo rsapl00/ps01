@@ -48,17 +48,20 @@ public class CycleChangeRequestController {
     }
 
     @PostMapping("/cyclechanges")
-    public Resources<Resource<CycleChangeRequest>> getCycleChangeByRunDateFromAndTo(
-            @Valid @RequestBody CycleChangeSearchDTO cycleChange) {
+    public ResponseEntity<?> getCycleChangeByRunDateFromAndTo(@Valid @RequestBody CycleChangeSearchDTO cycleChange)
+            throws URISyntaxException {
 
         List<Resource<CycleChangeRequest>> cycleChanges = cycleChangeRequestService
                 .generateCycleChangeRequest(cycleChange.getDivisionId(), cycleChange.getStartDate(),
                         cycleChange.getEndDate())
                 .stream().map(assembler::toResource).collect(Collectors.toList());
 
-        return new Resources<>(cycleChanges,
+        return ResponseEntity.created(new URI(
                 linkTo(methodOn(CycleChangeRequestController.class).getCycleChangeByRunDateFromAndTo(cycleChange))
-                        .withSelfRel());
+                        .withSelfRel().getHref()))
+                .body(new Resources<>(cycleChanges, linkTo(
+                        methodOn(CycleChangeRequestController.class).getCycleChangeByRunDateFromAndTo(cycleChange))
+                                .withSelfRel()));
     }
 
     @GetMapping("/cyclechanges/{id}")
@@ -85,7 +88,8 @@ public class CycleChangeRequestController {
     @DeleteMapping
     public ResponseEntity<?> deleteCycleChangeRequest(@PathVariable Long id) {
 
-        // TODO: call delete service; delete service only put expiration date on the record.
+        // TODO: call delete service; delete service only put expiration date on the
+        // record.
 
         return ResponseEntity.noContent().build();
     }
