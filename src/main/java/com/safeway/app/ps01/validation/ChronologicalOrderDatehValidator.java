@@ -1,7 +1,6 @@
 package com.safeway.app.ps01.validation;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
