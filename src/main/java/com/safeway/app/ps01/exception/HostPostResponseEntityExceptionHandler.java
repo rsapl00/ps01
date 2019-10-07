@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,8 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
         }
 
         /**
-         * Handles all Constraint validation exceptions for RequestBody parameters in Controllers.
+         * Handles all Constraint validation exceptions for RequestBody parameters in
+         * Controllers.
          * 
          * Example: @RequestBody CycleChangeRequest
          */
@@ -47,6 +49,19 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
                                 String.valueOf(ex.getBindingResult().getAllErrors().get(0)));
 
                 return new ResponseEntity<>(exceptionResource, status);
+        }
+
+        @ResponseBody
+        @Override
+        protected ResponseEntity<Object> handleTypeMismatch(
+                TypeMismatchException ex, HttpHeaders headers, HttpStatus status, WebRequest request) { 
+
+                String errorMessage = "Invalid value: "  + ex.getValue() + ". For date, value should be in yyyy-MM-dd format.";
+                        
+                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                                Arrays.asList(errorMessage), ex.getMessage());
+
+                return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
         }
 
 }
