@@ -1,11 +1,14 @@
 package com.safeway.app.ps01.util;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 
 import com.safeway.app.ps01.domain.enums.DayEnum;
 
 public final class DateUtil {
+
+    public static final String EXPIRATION_TS = "9999-12-31 23:59:59.999999";
 
     /**
      * Gets the nearest effective date of the given start date.
@@ -39,4 +42,9 @@ public final class DateUtil {
             start = start.plusDays(1);
         }
     }
+
+    public static Timestamp getExpiryTimestamp () {
+        return Timestamp.valueOf(EXPIRATION_TS);
+    }
+
 }

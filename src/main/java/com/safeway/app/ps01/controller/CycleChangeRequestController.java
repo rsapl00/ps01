@@ -64,6 +64,17 @@ public class CycleChangeRequestController {
                                 .withSelfRel()));
     }
 
+    @PostMapping("/cyclechanges")
+    public ResponseEntity<?> submitNewCycleChange(@Valid @RequestBody CycleChangeRequest newCycleChange) {
+
+        Resource<CycleChangeRequest> resource = assembler.toResource(cycleChangeRequestService.saveCycleChangeRequest(newCycleChange));
+
+        //return ResponseEntity.created(new URI(resource.getId().expand().getHref()))
+        //        .body(resource);
+        return null;
+
+    } 
+
     @GetMapping("/cyclechanges/{id}")
     public Resource<CycleChangeRequest> getCycleChangeById(@PathVariable Long id) {
 

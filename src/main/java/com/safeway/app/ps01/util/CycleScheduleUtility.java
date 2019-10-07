@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.safeway.app.ps01.controller.resource.User;
 import com.safeway.app.ps01.domain.CycleChangeRequest;
 import com.safeway.app.ps01.domain.CycleSchedule;
 import com.safeway.app.ps01.domain.enums.ChangeStatusEnum;
@@ -52,27 +53,47 @@ public final class CycleScheduleUtility {
         return cycleChangeRequests;
     }
 
+    public static CycleChangeRequest createCycleChangeRequest(final CycleChangeRequest submittedCycleChange, User user) {
+
+        // Gson gson = new Gson();
+        // CycleChangeRequest newChangeRequest = gson.fromJson(gson.toJson(submittedCycleChange), CycleChangeRequest.class);
+        // newChangeRequest.setCorpId(CorpEnum.DEFAULT_CORP.getCorpId());
+        //newChangeRequest.setDivId(user.getDivision()); division should be included on the submitted request
+
+        // CycleChangeRequest newChangeRequest = createCycleChangeRequest(
+            
+        // );
+
+        
+        return null;
+
+    }
+
     private static CycleChangeRequest createCycleChangeRequest(final CycleSchedule cycleSchedule,
-            final LocalDate currentDateInLoop, final DayEnum runDay, final DayEnum defEffectiveDate,
+            final LocalDate runDate, final DayEnum runDay, final DayEnum defEffectiveDate,
             final String offsiteInd, RunSequenceEnum sequence) {
 
         CycleChangeRequest schedule = new CycleChangeRequest();
 
         schedule.setCorpId(CorpEnum.DEFAULT_CORP.getCorpId());
         schedule.setDivId(cycleSchedule.getDivId());
-        schedule.setRunDate(java.sql.Date.valueOf(currentDateInLoop));
+        schedule.setRunDate(java.sql.Date.valueOf(runDate));
 
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         schedule.setCreateTimestamp(ts);
 
-        schedule.setEffectiveDate(DateUtil.getEffectiveDate(currentDateInLoop, defEffectiveDate));
+        schedule.setEffectiveDate(DateUtil.getEffectiveDate(runDate, defEffectiveDate));
 
         schedule.setRequestDayName(runDay.getDayName());
         schedule.setRunNumber(sequence.getRunSequence());
         schedule.setCycleChangeRequestType(CycleChangeRequestTypeEnum.BASE.getRequestType());
         schedule.setOffsiteIndicator(offsiteInd);
         schedule.setChangeStatusName(ChangeStatusEnum.BASE.getChangeStatus());
-
+        
         return schedule;
     }
+
+
+
+    
 }

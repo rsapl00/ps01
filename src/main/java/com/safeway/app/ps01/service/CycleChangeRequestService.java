@@ -3,15 +3,18 @@ package com.safeway.app.ps01.service;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import com.safeway.app.ps01.domain.CycleChangeRequest;
 import com.safeway.app.ps01.domain.CycleSchedule;
+import com.safeway.app.ps01.domain.enums.RunSequenceEnum;
 import com.safeway.app.ps01.exception.CycleChangeNotFoundException;
 import com.safeway.app.ps01.repository.CycleChangeRequestRepository;
 import com.safeway.app.ps01.repository.CycleScheduleRepository;
 import com.safeway.app.ps01.util.CycleScheduleUtility;
+import com.safeway.app.ps01.util.DateUtil;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CycleChangeRequestService {
 
-    private CycleChangeRequestRepository cycChangeReqRepository;
-    private CycleScheduleRepository cycleScheduleRepository;
+    final private CycleChangeRequestRepository cycChangeReqRepository;
+    final private CycleScheduleRepository cycleScheduleRepository;
 
-    public CycleChangeRequestService(CycleChangeRequestRepository repository,
-            CycleScheduleRepository cycleScheduleRepository) {
+    public CycleChangeRequestService(final CycleChangeRequestRepository repository,
+            final CycleScheduleRepository cycleScheduleRepository) {
         this.cycChangeReqRepository = repository;
         this.cycleScheduleRepository = cycleScheduleRepository;
     }
@@ -36,8 +39,8 @@ public class CycleChangeRequestService {
      * @param endRunDate
      * @return
      */
-    public List<CycleChangeRequest> findCycleChangeRequestByDivIdAndRunDate(String divId, Date startRunDate,
-            Date endRunDate) {
+    public List<CycleChangeRequest> findCycleChangeRequestByDivIdAndRunDate(final String divId, final Date startRunDate,
+            final Date endRunDate) {
         return cycChangeReqRepository.findByDivIdAndRunDateBetweenOrderByRunDateAsc(divId, startRunDate, endRunDate);
     }
 
@@ -49,7 +52,8 @@ public class CycleChangeRequestService {
      * @return
      */
     @Transactional(readOnly = false)
-    public List<CycleChangeRequest> generateCycleChangeRequest(String divId, Date startRunDate, Date endRunDate) {
+    public List<CycleChangeRequest> generateCycleChangeRequest(final String divId, final Date startRunDate,
+            final Date endRunDate) {
 
         // retrieve cycle change requests by division and run date range.
         final List<CycleChangeRequest> cycleChangeRequests = findCycleChangeRequestByDivIdAndRunDate(divId,
@@ -64,7 +68,7 @@ public class CycleChangeRequestService {
     }
 
     @Transactional(readOnly = false)
-    public List<CycleChangeRequest> saveCycleChangeRequests(List<CycleChangeRequest> cycleChangeRequests) {
+    public List<CycleChangeRequest> saveCycleChangeRequests(final List<CycleChangeRequest> cycleChangeRequests) {
         return cycChangeReqRepository.saveAll(cycleChangeRequests);
     }
 
@@ -75,6 +79,7 @@ public class CycleChangeRequestService {
      */
     public List<CycleChangeRequest> generateCycleChangeRequestBasedOnCycleSchedule(final String divId,
             final Date startRunDate, final Date endRunDate, final List<CycleChangeRequest> cycleChangeRequests) {
+
         final List<CycleSchedule> defaultCycleSchedules = cycleScheduleRepository.findByDivIdOrderByDayNumAsc(divId);
 
         final List<CycleChangeRequest> newSchedules = new ArrayList<>();
@@ -99,7 +104,7 @@ public class CycleChangeRequestService {
         return newSchedules;
     }
 
-	public CycleChangeRequest findById(Long id) {
+    public CycleChangeRequest findById(final Long id) {
 
         Optional<CycleChangeRequest> optional = cycChangeReqRepository.findById(id);
 
@@ -109,10 +114,43 @@ public class CycleChangeRequestService {
         }
 
         return optional.get();
-	}
+    }
 
-	public List<CycleChangeRequest> findAll() {
+    public List<CycleChangeRequest> findAll() {
         return cycChangeReqRepository.findAll();
-	}
+    }
+
+    public CycleChangeRequest saveCycleChangeRequest(final CycleChangeRequest newCycleChange) {
+
+        // retrieve cycle change request by run date and not expired.
+        final Collection<CycleChangeRequest> cycleChangeRequests = cycChangeReqRepository.findByDivIdAndRunDateAndNotExpired(
+                newCycleChange.getDivId(), newCycleChange.getRunDate(), DateUtil.getExpiryTimestamp());
+
+
+        if (cycleChangeRequests.isEmpty()) {
+            // 1. Insert if there is no other (Run 1) for the same date.
+            
+        } else {
+            if (cycleChangeRequests.size() >= RunSequenceEnum.SECOND.getRunSequence()) {
+                // throw new MaximumRunSchedulePerRunDateException
+            }
+
+            cycleChangeRequests.forEach(cycle -> {
+                // 2. if there is run 1 Offsite
+                // 2.2 Insert Run 2 if it is Offsite
+                // 2.3 Throw error if Run 2 is not offsite.
+            
+                // 3. If There is Run 1 non-offsite.
+                // 3.1 Insert Run 2.
+
+            });
+            
+            
+
+        }
+
+        
+        return null;
+    }
 
 }
