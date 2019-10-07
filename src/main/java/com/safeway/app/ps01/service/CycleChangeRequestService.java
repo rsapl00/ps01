@@ -73,7 +73,7 @@ public class CycleChangeRequestService {
      * if date is already exists in the database.
      * 
      */
-    private List<CycleChangeRequest> generateCycleChangeRequestBasedOnCycleSchedule(final String divId,
+    public List<CycleChangeRequest> generateCycleChangeRequestBasedOnCycleSchedule(final String divId,
             final Date startRunDate, final Date endRunDate, final List<CycleChangeRequest> cycleChangeRequests) {
         final List<CycleSchedule> defaultCycleSchedules = cycleScheduleRepository.findByDivIdOrderByDayNumAsc(divId);
 
