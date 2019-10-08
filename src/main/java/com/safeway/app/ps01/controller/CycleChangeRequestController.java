@@ -48,6 +48,16 @@ public class CycleChangeRequestController {
     }
 
     @PostMapping("/cyclechanges")
+    public ResponseEntity<?> submitNewCycleChange(@Valid @RequestBody CycleChangeRequest newCycleChange)
+            throws URISyntaxException {
+
+        Resource<CycleChangeRequest> resource = assembler
+                .toResource(cycleChangeRequestService.saveCycleChangeRequest(newCycleChange));
+
+        return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
+    }
+
+    @PostMapping("/cyclechanges/schedules")
     public ResponseEntity<?> getCycleChangeByRunDateFromAndTo(@Valid @RequestBody CycleChangeSearchDTO cycleChange)
             throws URISyntaxException {
 
@@ -63,17 +73,6 @@ public class CycleChangeRequestController {
                         methodOn(CycleChangeRequestController.class).getCycleChangeByRunDateFromAndTo(cycleChange))
                                 .withSelfRel()));
     }
-
-    @PostMapping("/cyclechanges")
-    public ResponseEntity<?> submitNewCycleChange(@Valid @RequestBody CycleChangeRequest newCycleChange) {
-
-        Resource<CycleChangeRequest> resource = assembler.toResource(cycleChangeRequestService.saveCycleChangeRequest(newCycleChange));
-
-        //return ResponseEntity.created(new URI(resource.getId().expand().getHref()))
-        //        .body(resource);
-        return null;
-
-    } 
 
     @GetMapping("/cyclechanges/{id}")
     public Resource<CycleChangeRequest> getCycleChangeById(@PathVariable Long id) {

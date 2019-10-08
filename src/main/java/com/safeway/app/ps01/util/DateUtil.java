@@ -3,12 +3,13 @@ package com.safeway.app.ps01.util;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.safeway.app.ps01.domain.enums.DayEnum;
 
 public final class DateUtil {
 
-    public static final String EXPIRATION_TS = "9999-12-31 23:59:59.999999";
+    public static final String EXPIRATION_TS = "9999-12-31 23:59:59";
 
     /**
      * Gets the nearest effective date of the given start date.
@@ -17,7 +18,7 @@ public final class DateUtil {
      * @param effectiveDate {@link DayEnum} The date of the desired effective day.
      * @return {@link Date} The nearest effect
      */
-    public static Date getEffectiveDate(Date startDate, DayEnum effectiveDate) {
+    public static Date getEffectiveDate(final Date startDate, final DayEnum effectiveDate) {
         return getEffectiveDate(startDate.toLocalDate(), effectiveDate);
     }
 
@@ -43,8 +44,19 @@ public final class DateUtil {
         }
     }
 
+    public static String getDayName(final Date date) {
+        return DayEnum.getDayEnum(date.toLocalDate().getDayOfWeek()).getDayName();
+    }
+
     public static Timestamp getExpiryTimestamp () {
         return Timestamp.valueOf(EXPIRATION_TS);
     }
 
+    public static Timestamp expireNow() {
+        return now();
+    }
+
+    public static Timestamp now() {
+        return Timestamp.valueOf(LocalDateTime.now());
+    }
 }

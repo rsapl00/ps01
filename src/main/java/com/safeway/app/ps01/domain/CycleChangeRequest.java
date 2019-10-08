@@ -16,6 +16,7 @@ import com.safeway.app.ps01.validation.ChronologicalOrderDateConstraint;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,15 +27,10 @@ import lombok.NonNull;
  */
 @Data
 @NoArgsConstructor
-@ChronologicalOrderDateConstraint.List( {
-    @ChronologicalOrderDateConstraint(
-        startDate = "runDate",
-        endDate = "effectiveDate",
-        message = "Effective date should be later than run date."
-    )
-})
+@ChronologicalOrderDateConstraint.List({
+        @ChronologicalOrderDateConstraint(startDate = "runDate", endDate = "effectiveDate", message = "Effective date should be later than run date.") })
 @Entity
-@Table(name="PSCYCREQ_TABLE")
+@Table(name = "PSCYCREQ_TABLE")
 public class CycleChangeRequest {
 
     @NonNull
@@ -47,19 +43,17 @@ public class CycleChangeRequest {
     @Column(name = "CORP_ID")
     private String corpId;
 
-    @NotNull
-    @NotBlank
     @NonNull
+    @NotNull(message = "Division ID is required.")
+    @NotBlank(message = "Division ID is required.")
     @Column(name = "DIV_ID")
     private String divId;
 
     @NonNull
-    @NotNull
     @Column(name = "RUN_DT")
     private Date runDate;
 
     @NonNull
-    @NotNull
     @Column(name = "EFF_DT")
     private Date effectiveDate;
 
@@ -69,18 +63,24 @@ public class CycleChangeRequest {
     private Timestamp createTimestamp;
 
     @NonNull
-    @Column(name = "REQ_DAY_NM")
-    private String requestDayName;
-
-    @NonNull
     @Column(name = "RUN_NBR")
     private Integer runNumber;
+
+    @NonNull
+    @Column(name = "RUN_DY")
+    private String runDayName;
+
+    @NonNull
+    @Column(name = "EFF_DY")
+    private String effectiveDayName;
 
     @NonNull
     @Column(name = "CYC_CHG_REQ_TYP_NM")
     private String cycleChangeRequestType;
 
     @NonNull
+    @NotBlank(message = "Offsite indicator is required. Accepted values are 0 and 1 only.")
+    @NotNull(message = "Offsite indicator is required. Accepted values are 0 and 1 only.")
     @Column(name = "OFFSITE_IND")
     private String offsiteIndicator;
 
@@ -107,7 +107,12 @@ public class CycleChangeRequest {
     private String lastUpdatedUserId;
 
     @NonNull
+    @Column(name = "LST_UPD_TS")
+    @LastModifiedDate
+    private Timestamp lastUpdateTs;
+
+    @NonNull
     @Column(name = "EXPIRY_TS")
     private Timestamp expiryTimestamp;
-    
+
 }

@@ -9,6 +9,7 @@ import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,47 +22,70 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestController
 public class HostPostResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-        @ResponseBody
-        @ExceptionHandler(Exception.class)
-        public final ResponseEntity<Object> handleAllException(Exception ex, WebRequest request) throws Exception {
+    @ResponseBody
+    @ExceptionHandler({Exception.class, HostPosDatabaseEntryCorruptedException.class})
+    public final ResponseEntity<Object> handleHostPosException(Exception ex, WebRequest request) throws Exception {
 
-                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
-                                Arrays.asList(ex.getMessage()), request.getDescription(false));
+        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                Arrays.asList(ex.getMessage()), request.getDescription(false));
 
-                return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
-        /**
-         * Handles all Constraint validation exceptions for RequestBody parameters in
-         * Controllers.
-         * 
-         * Example: @RequestBody CycleChangeRequest
-         */
-        @ResponseBody
-        @Override
-        protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                        HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @ResponseBody
+    @ExceptionHandler({MaximumRunSchedulePerRunDateException.class, CycleChangeRequestOffsiteException.class})
+    public final ResponseEntity<Object> handleUnprocessableEntityExceptions(Exception ex, WebRequest request) {
 
-                List<String> errors = ex.getBindingResult().getAllErrors().stream().map(x -> x.getDefaultMessage())
-                                .collect(Collectors.toList());
+        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                Arrays.asList(ex.getMessage()), request.getDescription(false));
 
-                HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(), errors,
-                                String.valueOf(ex.getBindingResult().getAllErrors().get(0)));
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    
+    /**
+     * Handles all Constraint validation exceptions for RequestBody parameters in
+     * Controllers.
+     * 
+     * Example: @RequestBody CycleChangeRequest
+     */
+    @ResponseBody
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+            HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-                return new ResponseEntity<>(exceptionResource, status);
-        }
+        List<String> errors = ex.getBindingResult().getAllErrors().stream().map(x -> x.getDefaultMessage())
+                .collect(Collectors.toList());
 
-        @ResponseBody
-        @Override
-        protected ResponseEntity<Object> handleTypeMismatch(
-                TypeMismatchException ex, HttpHeaders headers, HttpStatus status, WebRequest request) { 
+        HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(), errors,
+                String.valueOf(ex.getBindingResult().getAllErrors().get(0)));
 
-                String errorMessage = "Invalid value: "  + ex.getValue() + ". For date, value should be in yyyy-MM-dd format.";
-                        
-                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
-                                Arrays.asList(errorMessage), ex.getMessage());
+        return new ResponseEntity<>(exceptionResource, status);
+    }
 
-                return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
-        }
+    @ResponseBody
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
+            HttpStatus status, WebRequest request) {
+
+        String errorMessage = "Invalid value: " + ex.getValue() + ". For date, value should be in yyyy-MM-dd format.";
+
+        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                Arrays.asList(errorMessage), ex.getMessage());
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ResponseBody
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+            HttpHeaders headers, HttpStatus status, WebRequest request) {
+
+        String errorMessage = "Invalid request. Check your request body for any missing values.";
+
+        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                Arrays.asList(errorMessage), ex.getMessage());
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
 
 }

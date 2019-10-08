@@ -3,14 +3,17 @@ package com.safeway.app.ps01.service;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import com.safeway.app.ps01.domain.CycleChangeRequest;
 import com.safeway.app.ps01.domain.CycleSchedule;
+import com.safeway.app.ps01.domain.enums.OffsiteIndicatorEnum;
 import com.safeway.app.ps01.domain.enums.RunSequenceEnum;
 import com.safeway.app.ps01.exception.CycleChangeNotFoundException;
+import com.safeway.app.ps01.exception.CycleChangeRequestOffsiteException;
+import com.safeway.app.ps01.exception.HostPosDatabaseEntryCorruptedException;
+import com.safeway.app.ps01.exception.MaximumRunSchedulePerRunDateException;
 import com.safeway.app.ps01.repository.CycleChangeRequestRepository;
 import com.safeway.app.ps01.repository.CycleScheduleRepository;
 import com.safeway.app.ps01.util.CycleScheduleUtility;
@@ -120,37 +123,63 @@ public class CycleChangeRequestService {
         return cycChangeReqRepository.findAll();
     }
 
+    @Transactional(readOnly = false)
     public CycleChangeRequest saveCycleChangeRequest(final CycleChangeRequest newCycleChange) {
 
         // retrieve cycle change request by run date and not expired.
-        final Collection<CycleChangeRequest> cycleChangeRequests = cycChangeReqRepository.findByDivIdAndRunDateAndNotExpired(
-                newCycleChange.getDivId(), newCycleChange.getRunDate(), DateUtil.getExpiryTimestamp());
+        final List<CycleChangeRequest> cycleChangeRequests = cycChangeReqRepository
+                .findByDivIdAndRunDateAndNotExpired(newCycleChange.getDivId(), newCycleChange.getRunDate(),
+                        DateUtil.getExpiryTimestamp());
 
+        final List<CycleChangeRequest> newCycleChangeRequests = new ArrayList<>();
 
         if (cycleChangeRequests.isEmpty()) {
             // 1. Insert if there is no other (Run 1) for the same date.
-            
+            newCycleChangeRequests.add(cycChangeReqRepository
+                    .save(CycleScheduleUtility.createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.FIRST)));
+
         } else {
             if (cycleChangeRequests.size() >= RunSequenceEnum.SECOND.getRunSequence()) {
-                // throw new MaximumRunSchedulePerRunDateException
+                // TODO: messaging template
+                throw new MaximumRunSchedulePerRunDateException("Maximum schedule per run date reached.");
             }
 
             cycleChangeRequests.forEach(cycle -> {
-                // 2. if there is run 1 Offsite
-                // 2.2 Insert Run 2 if it is Offsite
-                // 2.3 Throw error if Run 2 is not offsite.
-            
-                // 3. If There is Run 1 non-offsite.
-                // 3.1 Insert Run 2.
+                // 2. If There is Run 1 non-offsite.
+                // 2.1 Insert Run 2.
+                if ((RunSequenceEnum.FIRST.getRunSequence() == cycle.getRunNumber().intValue())
+                        && cycle.getOffsiteIndicator().equals(OffsiteIndicatorEnum.NON_OFFSITE.getIndicator())) {
 
+                    newCycleChangeRequests.add(cycChangeReqRepository
+                            .save(CycleScheduleUtility.createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.SECOND)));
+
+                }
+
+                // 3. if there is run 1 Offsite
+                // 3.1 Insert Run 2 if it is Offsite
+                // 3.2 Throw error if Run 2 is not offsite.
+                if ((RunSequenceEnum.FIRST.getRunSequence() == cycle.getRunNumber().intValue())
+                        && cycle.getOffsiteIndicator().equals(OffsiteIndicatorEnum.OFFSITE.getIndicator())) {
+
+                    // if Run 1 is OFFSITE, RUN 2 should also be OFFSITE. else throw Exception
+                    if (newCycleChange.getOffsiteIndicator().equals(OffsiteIndicatorEnum.NON_OFFSITE.getIndicator())) {
+                        // TODO: Messaging template
+                        throw new CycleChangeRequestOffsiteException("Invalid schedule. Check offsite for the specified run date.");
+                    }
+
+                    // RUN 1 and 2 is both offsite.
+                    newCycleChangeRequests.add(cycChangeReqRepository
+                            .save(CycleScheduleUtility.createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.SECOND)));
+
+                }
             });
-            
-            
-
         }
 
-        
-        return null;
-    }
+        if (newCycleChangeRequests.isEmpty()) {
+            // TODO: Messaging template
+            throw new HostPosDatabaseEntryCorruptedException("Possible data corruption in Database entry. Look for a one (1) active run date with run number is set to 2.");
+        }
 
+        return newCycleChangeRequests.size() > 0 ? newCycleChangeRequests.get(0) : null;
+    }
 }
