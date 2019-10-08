@@ -3,7 +3,9 @@ package com.safeway.app.ps01.util;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.safeway.app.ps01.domain.CycleChangeRequest;
@@ -60,12 +62,14 @@ public final class CycleScheduleUtility {
         Gson gson = new Gson();
         CycleChangeRequest newChangeRequest = gson.fromJson(gson.toJson(submittedCycleChange),
                 CycleChangeRequest.class);
-        
-        /* newChangeRequest.setDivId(user.getDivision()); division should be included on
-            the submitted request
-        */
+
+        /*
+         * newChangeRequest.setDivId(user.getDivision()); division should be included on
+         * the submitted request
+         */
         newChangeRequest.setCorpId(CorpEnum.DEFAULT_CORP.getCorpId());
-        newChangeRequest.setCreateTimestamp(DateUtil.now()); // TODO: REMOVE as this will be populated by Spring Data JPA @CreatedDate
+        newChangeRequest.setCreateTimestamp(DateUtil.now()); // TODO: REMOVE as this will be populated by Spring Data
+                                                             // JPA @CreatedDate
 
         newChangeRequest.setRunNumber(runSequence.getRunSequence());
         newChangeRequest.setRunDayName(DateUtil.getDayName(newChangeRequest.getRunDate()));
@@ -79,9 +83,29 @@ public final class CycleScheduleUtility {
 
         newChangeRequest.setChangeStatusName(ChangeStatusEnum.SAVED.getChangeStatus());
 
+        // TODO: This can be removed since the table column in DB2 has default value
         newChangeRequest.setExpiryTimestamp(DateUtil.getExpiryTimestamp());
-        
+
         return newChangeRequest;
+    }
+
+    public static Boolean validateCycleChangeEffectiveDate(final List<CycleChangeRequest> beforeCycleChanges,
+            final List<CycleChangeRequest> afterCycleChanges, CycleChangeRequest submittedCycleChange) {
+
+        boolean isEffDtGood = true;
+
+        List<CycleChangeRequest> descOrderCycleChange = beforeCycleChanges.stream()
+                .sorted(Comparator.comparing(CycleChangeRequest::getRunDate)).collect(Collectors.toList());
+
+        List<CycleChangeRequest> ascOrderCycleChange = afterCycleChanges.stream()
+                .sorted(Comparator.comparing(CycleChangeRequest::getRunDate)).collect(Collectors.toList());
+
+        // isEffDtGood = beforeCycleChanges.stream().anyMatch(cycle -> {
+
+        // return false;
+        // });
+
+        return isEffDtGood;
     }
 
     private static CycleChangeRequest createCycleChangeRequest(final CycleSchedule cycleSchedule,
@@ -98,6 +122,7 @@ public final class CycleScheduleUtility {
         schedule.setCreateTimestamp(ts);
 
         schedule.setEffectiveDate(DateUtil.getEffectiveDate(runDate, defEffectiveDate));
+        schedule.setEffectiveDayName(DateUtil.getDayName(schedule.getEffectiveDate()));
 
         schedule.setRunDayName(runDay.getDayName());
         schedule.setRunNumber(sequence.getRunSequence());
@@ -107,5 +132,4 @@ public final class CycleScheduleUtility {
 
         return schedule;
     }
-
 }

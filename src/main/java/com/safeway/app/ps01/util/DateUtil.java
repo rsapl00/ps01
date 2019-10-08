@@ -5,11 +5,13 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.safeway.app.ps01.domain.enums.BufferDayEnum;
 import com.safeway.app.ps01.domain.enums.DayEnum;
 
 public final class DateUtil {
 
     public static final String EXPIRATION_TS = "9999-12-31 23:59:59";
+    public static final Integer BUFFER_DAYS = 7;
 
     /**
      * Gets the nearest effective date of the given start date.
@@ -58,5 +60,15 @@ public final class DateUtil {
 
     public static Timestamp now() {
         return Timestamp.valueOf(LocalDateTime.now());
+    }
+
+    public static Date getBufferDate(final Date runDate, BufferDayEnum days) {
+        LocalDate toProcess = runDate.toLocalDate();
+
+        if (BufferDayEnum.PLUS_BUFFER == days) {
+            return Date.valueOf(toProcess.plusDays(days.getDays()));
+        } else {
+            return Date.valueOf(toProcess.minusDays(days.getDays()));
+        }
     }
 }

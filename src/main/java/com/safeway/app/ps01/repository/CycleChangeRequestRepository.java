@@ -12,9 +12,18 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CycleChangeRequestRepository extends JpaRepository<CycleChangeRequest, Long> {
-    
-    public List<CycleChangeRequest> findByDivIdAndRunDateBetweenOrderByRunDateAsc(String divisionId, Date startRunDate, Date endRunDate);
 
-    @Query("SELECT c FROM CycleChangeRequest c WHERE c.divId = :divisionId AND c.runDate = :runDate AND c.expiryTimestamp >= :expiryTs")
-    public List<CycleChangeRequest> findByDivIdAndRunDateAndNotExpired(String divisionId, Date runDate, Timestamp expiryTs);
+    public List<CycleChangeRequest> findByRunDateBetweenOrderByRunDateAsc(Date startDate, Date endDate);
+
+    public List<CycleChangeRequest> findByDivIdAndRunDateBetweenOrderByRunDateAsc(String divisionId, Date startRunDate,
+            Date endRunDate);
+
+    @Query("SELECT c FROM CycleChangeRequest c WHERE c.divId = :divisionId AND c.expiryTimestamp >= :expiryTs AND c.runDate BETWEEN :startDate AND :endDate ORDER BY c.runDate ASC")
+    public List<CycleChangeRequest> findActiveByDivIdAndBetweenRunDates(String divisionId, Date startDate, Date endDate,
+            Timestamp expiryTs);
+
+    @Query("SELECT c FROM CycleChangeRequest c WHERE c.divId = :divisionId AND c.runDate = :runDate AND c.expiryTimestamp >= :expiryTs ORDER BY c.runDate ASC")
+    public List<CycleChangeRequest> findByDivIdAndRunDateAndNotExpired(String divisionId, Date runDate,
+            Timestamp expiryTs);
+
 }

@@ -135,6 +135,10 @@ public class CycleChangeRequestService {
 
         if (cycleChangeRequests.isEmpty()) {
             // 1. Insert if there is no other (Run 1) for the same date.
+
+            // validation of effective date
+            // 
+
             newCycleChangeRequests.add(cycChangeReqRepository
                     .save(CycleScheduleUtility.createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.FIRST)));
 
@@ -145,10 +149,18 @@ public class CycleChangeRequestService {
             }
 
             cycleChangeRequests.forEach(cycle -> {
+
+                // validation of effective date
+                // effective date of run 2 should be equal or greater than effective date of run 1
+                // effective date that is greater than from run 1 should be less than the effective dates of
+                // the later runs.
+
                 // 2. If There is Run 1 non-offsite.
                 // 2.1 Insert Run 2.
                 if ((RunSequenceEnum.FIRST.getRunSequence() == cycle.getRunNumber().intValue())
                         && cycle.getOffsiteIndicator().equals(OffsiteIndicatorEnum.NON_OFFSITE.getIndicator())) {
+
+                    // validate if effective date of run 2 is not before or after any effective dates
 
                     newCycleChangeRequests.add(cycChangeReqRepository
                             .save(CycleScheduleUtility.createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.SECOND)));
@@ -181,5 +193,9 @@ public class CycleChangeRequestService {
         }
 
         return newCycleChangeRequests.size() > 0 ? newCycleChangeRequests.get(0) : null;
+    }
+
+    private List<CycleChangeRequest> getActiveCycleChangeRequestByRunDates(String divisionId, Date startDate, Date endDate) {
+        return cycChangeReqRepository.findActiveByDivIdAndBetweenRunDates(divisionId, startDate, endDate, DateUtil.getExpiryTimestamp());
     }
 }
