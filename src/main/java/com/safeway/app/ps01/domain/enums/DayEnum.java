@@ -1,28 +1,29 @@
 package com.safeway.app.ps01.domain.enums;
 
+import java.sql.Date;
 import java.time.DayOfWeek;
+
+import com.safeway.app.ps01.util.DateUtil;
 
 public enum DayEnum {
 
-    NO_RUNDAY("0", "NO RUNDAY"),
-    SUNDAY("1","SUNDAY"),
-    MONDAY("2","MONDAY"),
-    TUESDAY("3","TUESDAY"),
-    WEDNESDAY("4","WEDNESDAY"),
-    THURSDAY("5","THURSDAY"),
-    FRIDAY("6","FRIDAY"),
-    SATURDAY("7","SATURDAY");
+    NO_RUNDAY("0", "NO RUNDAY"), SUNDAY("1", "SUNDAY"), MONDAY("2", "MONDAY"), TUESDAY("3", "TUESDAY"),
+    WEDNESDAY("4", "WEDNESDAY"), THURSDAY("5", "THURSDAY"), FRIDAY("6", "FRIDAY"), SATURDAY("7", "SATURDAY");
 
     private String dayNumber;
     private String dayName;
 
-    private DayEnum (final String dayNumber, final String dayName) {
+    private DayEnum(final String dayNumber, final String dayName) {
         this.dayNumber = dayNumber;
         this.dayName = dayName;
     }
 
-    public String getDayNumber () {
+    public String getDayNumber() {
         return this.dayNumber;
+    }
+
+    public Integer getDayNumberInteger() {
+        return Integer.valueOf(this.dayNumber);
     }
 
     public String getDayName() {
@@ -52,5 +53,25 @@ public enum DayEnum {
 
         // default Day
         return DayEnum.NO_RUNDAY;
+    }
+
+    public static DayEnum getDayEnum(final Date date) {
+        for (DayEnum day : DayEnum.values()) {
+            if (day.getDayName().equals(DateUtil.getDayName(date))) {
+                return day;
+            }
+        }
+
+        return NO_RUNDAY;
+    }
+
+    public static DayEnum getDayEnumByDayName(final String name) {
+        for (DayEnum day : DayEnum.values()) {
+            if (day.getDayName().equals(name)) {
+                return day;
+            }
+        }
+
+        return NO_RUNDAY;
     }
 }

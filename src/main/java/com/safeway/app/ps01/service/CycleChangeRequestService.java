@@ -1,5 +1,7 @@
 package com.safeway.app.ps01.service;
 
+import static com.safeway.app.ps01.util.CycleScheduleUtility.*;
+
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.Optional;
 
 import com.safeway.app.ps01.domain.CycleChangeRequest;
 import com.safeway.app.ps01.domain.CycleSchedule;
+import com.safeway.app.ps01.domain.enums.BufferDayEnum;
 import com.safeway.app.ps01.domain.enums.OffsiteIndicatorEnum;
 import com.safeway.app.ps01.domain.enums.RunSequenceEnum;
 import com.safeway.app.ps01.exception.CycleChangeNotFoundException;
@@ -96,7 +99,7 @@ public class CycleChangeRequestService {
             final LocalDate currentDateInLoop = date;
 
             // Generate if the current date is not yet in Cycle Change Request
-            if (!CycleScheduleUtility.isRunDateExists(currentDateInLoop, cycleChangeRequests)) {
+            if (!isRunDateExists(currentDateInLoop, cycleChangeRequests)) {
                 defaultCycleSchedules.stream().forEach(cycleSchedule -> {
                     newSchedules
                             .addAll(CycleScheduleUtility.generateCycleChangeRequest(cycleSchedule, currentDateInLoop));
@@ -127,9 +130,8 @@ public class CycleChangeRequestService {
     public CycleChangeRequest saveCycleChangeRequest(final CycleChangeRequest newCycleChange) {
 
         // retrieve cycle change request by run date and not expired.
-        final List<CycleChangeRequest> cycleChangeRequests = cycChangeReqRepository
-                .findByDivIdAndRunDateAndNotExpired(newCycleChange.getDivId(), newCycleChange.getRunDate(),
-                        DateUtil.getExpiryTimestamp());
+        final List<CycleChangeRequest> cycleChangeRequests = cycChangeReqRepository.findByDivIdAndRunDateAndNotExpired(
+                newCycleChange.getDivId(), newCycleChange.getRunDate(), DateUtil.getExpiryTimestamp());
 
         final List<CycleChangeRequest> newCycleChangeRequests = new ArrayList<>();
 
@@ -137,10 +139,10 @@ public class CycleChangeRequestService {
             // 1. Insert if there is no other (Run 1) for the same date.
 
             // validation of effective date
-            // 
-
-            newCycleChangeRequests.add(cycChangeReqRepository
-                    .save(CycleScheduleUtility.createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.FIRST)));
+            if (validateEffectiveDate(newCycleChange)) {
+                newCycleChangeRequests.add(cycChangeReqRepository
+                        .save(createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.FIRST)));
+            }
 
         } else {
             if (cycleChangeRequests.size() >= RunSequenceEnum.SECOND.getRunSequence()) {
@@ -150,20 +152,25 @@ public class CycleChangeRequestService {
 
             cycleChangeRequests.forEach(cycle -> {
 
-                // validation of effective date
-                // effective date of run 2 should be equal or greater than effective date of run 1
-                // effective date that is greater than from run 1 should be less than the effective dates of
-                // the later runs.
-
                 // 2. If There is Run 1 non-offsite.
                 // 2.1 Insert Run 2.
                 if ((RunSequenceEnum.FIRST.getRunSequence() == cycle.getRunNumber().intValue())
                         && cycle.getOffsiteIndicator().equals(OffsiteIndicatorEnum.NON_OFFSITE.getIndicator())) {
 
-                    // validate if effective date of run 2 is not before or after any effective dates
+                    if (validateEffectiveDate(newCycleChange)) {
 
-                    newCycleChangeRequests.add(cycChangeReqRepository
-                            .save(CycleScheduleUtility.createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.SECOND)));
+                        // validate if new cycle change needs to be run 1 and change current DB entry to run 2
+                        if (cycle.getEffectiveDate().after(newCycleChange.getEffectiveDate())) {
+                            cycle.setRunNumber(RunSequenceEnum.SECOND.getRunSequence());
+
+                            cycChangeReqRepository.save(cycle);
+                            newCycleChangeRequests.add(cycChangeReqRepository
+                                    .save(createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.FIRST)));
+                        } else {
+                            newCycleChangeRequests.add(cycChangeReqRepository
+                                    .save(createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.SECOND)));
+                        }
+                    }
 
                 }
 
@@ -176,26 +183,53 @@ public class CycleChangeRequestService {
                     // if Run 1 is OFFSITE, RUN 2 should also be OFFSITE. else throw Exception
                     if (newCycleChange.getOffsiteIndicator().equals(OffsiteIndicatorEnum.NON_OFFSITE.getIndicator())) {
                         // TODO: Messaging template
-                        throw new CycleChangeRequestOffsiteException("Invalid schedule. Check offsite for the specified run date.");
+                        throw new CycleChangeRequestOffsiteException(
+                                "Invalid schedule. Check offsite for the specified run date.");
                     }
 
-                    // RUN 1 and 2 is both offsite.
-                    newCycleChangeRequests.add(cycChangeReqRepository
-                            .save(CycleScheduleUtility.createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.SECOND)));
+                    if (validateEffectiveDate(newCycleChange)) {
+                        // validate if new cycle change needs to be run 1
+                        if (cycle.getEffectiveDate().after(newCycleChange.getEffectiveDate())) {
+                            cycle.setRunNumber(RunSequenceEnum.SECOND.getRunSequence());
 
+                            cycChangeReqRepository.save(cycle);
+                            // RUN 1 and 2 is both offsite.
+                            newCycleChangeRequests.add(cycChangeReqRepository
+                                    .save(createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.FIRST)));
+                        } else {
+                            newCycleChangeRequests.add(cycChangeReqRepository
+                                    .save(createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.SECOND)));
+                        }
+                    }
                 }
             });
         }
 
         if (newCycleChangeRequests.isEmpty()) {
             // TODO: Messaging template
-            throw new HostPosDatabaseEntryCorruptedException("Possible data corruption in Database entry. Look for a one (1) active run date with run number is set to 2.");
+            throw new HostPosDatabaseEntryCorruptedException(
+                    "Possible data corruption in Database entry. Look for a one (1) active run date with run number is set to 2.");
         }
 
         return newCycleChangeRequests.size() > 0 ? newCycleChangeRequests.get(0) : null;
     }
 
-    private List<CycleChangeRequest> getActiveCycleChangeRequestByRunDates(String divisionId, Date startDate, Date endDate) {
-        return cycChangeReqRepository.findActiveByDivIdAndBetweenRunDates(divisionId, startDate, endDate, DateUtil.getExpiryTimestamp());
+    private List<CycleChangeRequest> getActiveCycleChangeRequestByRunDates(String divisionId, Date startDate,
+            Date endDate) {
+        return cycChangeReqRepository.findActiveByDivIdAndBetweenRunDates(divisionId, startDate, endDate,
+                DateUtil.getExpiryTimestamp());
+    }
+
+    private boolean validateEffectiveDate(CycleChangeRequest submittedCycleChange) {
+
+        Date runDate = submittedCycleChange.getRunDate();
+
+        List<CycleChangeRequest> prevWeek = getActiveCycleChangeRequestByRunDates(submittedCycleChange.getDivId(),
+                DateUtil.getBufferDate(runDate, BufferDayEnum.MINUS_BUFFER), runDate);
+
+        List<CycleChangeRequest> nextWeek = getActiveCycleChangeRequestByRunDates(submittedCycleChange.getDivId(),
+                runDate, DateUtil.getBufferDate(runDate, BufferDayEnum.PLUS_BUFFER));
+
+        return validateCycleChangeEffectiveDate(prevWeek, nextWeek, submittedCycleChange);
     }
 }

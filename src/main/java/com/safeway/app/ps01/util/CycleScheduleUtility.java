@@ -1,5 +1,8 @@
 package com.safeway.app.ps01.util;
 
+import static com.safeway.app.ps01.util.DateUtil.*;
+
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,8 +19,12 @@ import com.safeway.app.ps01.domain.enums.CycleChangeRequestTypeEnum;
 import com.safeway.app.ps01.domain.enums.DayEnum;
 import com.safeway.app.ps01.domain.enums.OffsiteIndicatorEnum;
 import com.safeway.app.ps01.domain.enums.RunSequenceEnum;
+import com.safeway.app.ps01.domain.resource.ValidEffectiveDates;
+import com.safeway.app.ps01.exception.InvalidEffectiveDate;
 
 public final class CycleScheduleUtility {
+
+    public final static Integer MAXIMUM_SAME_EFFECTIVE_DATE = 2;
 
     public static boolean isRunDateExists(final LocalDate runDate, final List<CycleChangeRequest> cycleChangeRequests) {
         return cycleChangeRequests.stream().anyMatch(change -> {
@@ -68,12 +75,12 @@ public final class CycleScheduleUtility {
          * the submitted request
          */
         newChangeRequest.setCorpId(CorpEnum.DEFAULT_CORP.getCorpId());
-        newChangeRequest.setCreateTimestamp(DateUtil.now()); // TODO: REMOVE as this will be populated by Spring Data
-                                                             // JPA @CreatedDate
+        newChangeRequest.setCreateTimestamp(now()); // TODO: REMOVE as this will be populated by Spring Data
+                                                    // JPA @CreatedDate
 
         newChangeRequest.setRunNumber(runSequence.getRunSequence());
-        newChangeRequest.setRunDayName(DateUtil.getDayName(newChangeRequest.getRunDate()));
-        newChangeRequest.setEffectiveDayName(DateUtil.getDayName(newChangeRequest.getEffectiveDate()));
+        newChangeRequest.setRunDayName(getDayName(newChangeRequest.getRunDate()));
+        newChangeRequest.setEffectiveDayName(getDayName(newChangeRequest.getEffectiveDate()));
 
         if (newChangeRequest.getOffsiteIndicator().equals(OffsiteIndicatorEnum.NON_OFFSITE.getIndicator())) {
             newChangeRequest.setCycleChangeRequestType(CycleChangeRequestTypeEnum.ADD.getRequestType());
@@ -84,28 +91,128 @@ public final class CycleScheduleUtility {
         newChangeRequest.setChangeStatusName(ChangeStatusEnum.SAVED.getChangeStatus());
 
         // TODO: This can be removed since the table column in DB2 has default value
-        newChangeRequest.setExpiryTimestamp(DateUtil.getExpiryTimestamp());
+        newChangeRequest.setExpiryTimestamp(getExpiryTimestamp());
 
         return newChangeRequest;
     }
 
     public static Boolean validateCycleChangeEffectiveDate(final List<CycleChangeRequest> beforeCycleChanges,
-            final List<CycleChangeRequest> afterCycleChanges, CycleChangeRequest submittedCycleChange) {
+            final List<CycleChangeRequest> afterCycleChanges, final CycleChangeRequest submittedCycleChange) {
 
-        boolean isEffDtGood = true;
-
-        List<CycleChangeRequest> descOrderCycleChange = beforeCycleChanges.stream()
+        final List<CycleChangeRequest> descOrderCycleChange = beforeCycleChanges.stream()
                 .sorted(Comparator.comparing(CycleChangeRequest::getRunDate)).collect(Collectors.toList());
 
-        List<CycleChangeRequest> ascOrderCycleChange = afterCycleChanges.stream()
+        final List<CycleChangeRequest> ascOrderCycleChange = afterCycleChanges.stream()
                 .sorted(Comparator.comparing(CycleChangeRequest::getRunDate)).collect(Collectors.toList());
 
-        // isEffDtGood = beforeCycleChanges.stream().anyMatch(cycle -> {
+        ValidEffectiveDates before = processEffectiveDateFromEarlierEffectiveDates(descOrderCycleChange,
+                submittedCycleChange);
 
-        // return false;
-        // });
+        ValidEffectiveDates after = processEffectiveDateFromLaterEffectiveDates(ascOrderCycleChange,
+                submittedCycleChange);
 
-        return isEffDtGood;
+        boolean isBothValid = before.IsValid() && after.IsValid();
+
+        int sameEffDtCount = before.getEffectiveDates().stream().filter(date -> {
+            return date.equals(submittedCycleChange.getEffectiveDate());
+        }).collect(Collectors.toList()).size() + after.getEffectiveDates().stream().filter(date -> {
+            return date.equals(submittedCycleChange.getEffectiveDate());
+        }).collect(Collectors.toList()).size();
+
+        if (sameEffDtCount >= 2) {
+            // TODO: messaging template
+            throw new InvalidEffectiveDate("Invalid effective date. Only two same effective date per week are valid.");
+        }
+
+        if (sameEffDtCount <= 1 && isBothValid) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static ValidEffectiveDates processEffectiveDateFromLaterEffectiveDates(
+            final List<CycleChangeRequest> ascOrderCycleChange, final CycleChangeRequest submittedCycleChange) {
+
+        ValidEffectiveDates validEffDate = new ValidEffectiveDates();
+
+        for (CycleChangeRequest cycle : ascOrderCycleChange) {
+            final Date subEffDt = submittedCycleChange.getEffectiveDate();
+            final Date nextEffDt = cycle.getEffectiveDate();
+
+            // if submitted eff date is earlier than previous cycle's effective date.
+            if (subEffDt.before(nextEffDt)) {
+                validEffDate.setIsValid(true);
+                break;
+            }
+
+            // if submitted effective date is later than the previous cycle's
+            // effective date
+            if (subEffDt.after(nextEffDt)) {
+                if (validEffDate.getEffectiveDates().isEmpty()) {
+                    validEffDate.setIsValid(false);
+                }
+                break;
+            }
+
+            // count the effective date
+            if (subEffDt.equals(nextEffDt)) {
+                validEffDate.addEffectiveDate(subEffDt);
+            }
+
+            int sameEffDtCount = validEffDate.getEffectiveDates().stream().filter(date -> {
+                return date.equals(subEffDt);
+            }).collect(Collectors.toList()).size();
+
+            if (sameEffDtCount >= MAXIMUM_SAME_EFFECTIVE_DATE) {
+                validEffDate.setIsValid(false);
+            }
+        }
+
+        return validEffDate;
+
+    }
+
+    private static ValidEffectiveDates processEffectiveDateFromEarlierEffectiveDates(
+            final List<CycleChangeRequest> descOrderCycleChange, final CycleChangeRequest submittedCycleChange) {
+
+        ValidEffectiveDates validEffDate = new ValidEffectiveDates();
+
+        for (CycleChangeRequest cycle : descOrderCycleChange) {
+            final Date subEffDt = submittedCycleChange.getEffectiveDate();
+            final Date prevEffDt = cycle.getEffectiveDate();
+
+            // if submitted eff date is later than previous cycle's effective date.
+            if (subEffDt.after(prevEffDt)) {
+                validEffDate.setIsValid(true);
+                break;
+            }
+
+            // if submitted effective date is earlier than the previous cycle's
+            // effective date
+            if (subEffDt.before(prevEffDt)) {
+                if (validEffDate.getEffectiveDates().isEmpty()) {
+                    validEffDate.setIsValid(false);
+                }
+
+                break;
+            }
+
+            // count the effective date
+            if (subEffDt.equals(prevEffDt)) {
+                validEffDate.addEffectiveDate(subEffDt);
+            }
+
+            int sameEffDtCount = validEffDate.getEffectiveDates().stream().filter(date -> {
+                return date.equals(subEffDt);
+            }).collect(Collectors.toList()).size();
+
+            if (sameEffDtCount >= MAXIMUM_SAME_EFFECTIVE_DATE) {
+                validEffDate.setIsValid(false);
+            }
+        }
+
+        return validEffDate;
     }
 
     private static CycleChangeRequest createCycleChangeRequest(final CycleSchedule cycleSchedule,
@@ -121,8 +228,8 @@ public final class CycleScheduleUtility {
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         schedule.setCreateTimestamp(ts);
 
-        schedule.setEffectiveDate(DateUtil.getEffectiveDate(runDate, defEffectiveDate));
-        schedule.setEffectiveDayName(DateUtil.getDayName(schedule.getEffectiveDate()));
+        schedule.setEffectiveDate(getEffectiveDate(runDate, defEffectiveDate));
+        schedule.setEffectiveDayName(getDayName(schedule.getEffectiveDate()));
 
         schedule.setRunDayName(runDay.getDayName());
         schedule.setRunNumber(sequence.getRunSequence());

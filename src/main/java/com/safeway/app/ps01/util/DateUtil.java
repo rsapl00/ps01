@@ -71,4 +71,8 @@ public final class DateUtil {
             return Date.valueOf(toProcess.minusDays(days.getDays()));
         }
     }
+
+    public static boolean isSameDate(Date date1, Date date2) {
+        return date1.equals(date2);
+    }
 }
