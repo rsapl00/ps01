@@ -33,7 +33,7 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
     }
 
     @ResponseBody
-    @ExceptionHandler({MaximumRunSchedulePerRunDateException.class, CycleChangeRequestOffsiteException.class})
+    @ExceptionHandler({MaximumRunSchedulePerRunDateException.class, CycleChangeRequestOffsiteException.class, InvalidEffectiveDate.class})
     public final ResponseEntity<Object> handleUnprocessableEntityExceptions(Exception ex, WebRequest request) {
 
         HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),

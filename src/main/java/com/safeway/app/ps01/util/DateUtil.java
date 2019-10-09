@@ -75,4 +75,16 @@ public final class DateUtil {
     public static boolean isSameDate(Date date1, Date date2) {
         return date1.equals(date2);
     }
+
+    public static boolean isBefore(Date from, Date to) {
+        return from.toLocalDate().isBefore(to.toLocalDate());
+    }
+
+    public static boolean isAfter(Date from, Date to) {
+        return from.toLocalDate().isAfter(to.toLocalDate());
+    }
+
+    public static boolean isEqual(Date date1, Date date2) {
+        return date1.toLocalDate().isEqual(date2.toLocalDate());
+    }
 }

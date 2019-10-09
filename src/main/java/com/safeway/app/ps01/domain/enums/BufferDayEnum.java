@@ -1,8 +1,8 @@
 package com.safeway.app.ps01.domain.enums;
 
 public enum BufferDayEnum {
-    PLUS_BUFFER(7),
-    MINUS_BUFFER(-7);
+    PLUS_BUFFER(8),
+    MINUS_BUFFER(8);
 
     private Integer days;
 
