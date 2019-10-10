@@ -155,7 +155,7 @@ public class CycleChangeRequestService {
         } else {
             if (cycleChangeRequests.size() >= RunSequenceEnum.SECOND.getRunSequence()) {
                 // TODO: messaging template
-                throw new MaximumRunSchedulePerRunDateException("Maximum schedule per run date reached.");
+                throw new MaximumRunSchedulePerRunDateException("Maximum schedule per run date reached. Only two (2) same run date is accepted.");
             }
 
             cycleChangeRequests.forEach(cycle -> {
@@ -192,7 +192,7 @@ public class CycleChangeRequestService {
                     if (newCycleChange.getOffsiteIndicator().equals(OffsiteIndicatorEnum.NON_OFFSITE.getIndicator())) {
                         // TODO: Messaging template
                         throw new CycleChangeRequestOffsiteException(
-                                "Invalid schedule. Check offsite for the specified run date.");
+                                "Invalid offsite schedule. You cannot request Offsite on Run1 only for a 2 run cycle. Offsite can be Run2 ONLY or Run1 AND Run2 for a 2 run cycle.");
                     }
 
                     newCycleChangeRequests.add(cycChangeReqRepository

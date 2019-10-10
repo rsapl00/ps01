@@ -114,7 +114,7 @@ public final class CycleScheduleUtility {
 
         if (sameEffDtCount >= MAXIMUM_SAME_EFFECTIVE_DATE) {
             // TODO: messaging template
-            throw new InvalidEffectiveDate("Invalid effective date. Only two same effective date per week are valid.");
+            throw new InvalidEffectiveDate("Invalid effective date. Only two consecutive same effective date is valid.");
         }
 
         if (sameEffDtCount <= 1 && isBothValid) {
@@ -182,12 +182,6 @@ public final class CycleScheduleUtility {
         for (CycleChangeRequest cycle : descOrderCycleChange) {
             final Date subEffDt = submittedCycleChange.getEffectiveDate();
             final Date prevEffDt = cycle.getEffectiveDate();
-
-            // if submitted eff date is later than previous cycle's effective date.
-            // if (isAfter(subEffDt, prevEffDt)) {
-            //     validEffDate.setIsValid(true);
-            //     break;
-            // }
 
             // if submitted effective date is earlier than the previous cycle's
             // effective date
