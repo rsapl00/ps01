@@ -114,7 +114,8 @@ public final class CycleScheduleUtility {
 
         if (sameEffDtCount >= MAXIMUM_SAME_EFFECTIVE_DATE) {
             // TODO: messaging template
-            throw new InvalidEffectiveDate("Invalid effective date. Only two consecutive same effective date is valid.");
+            throw new InvalidEffectiveDate(
+                    "Invalid effective date. Only two consecutive same effective date is valid.");
         }
 
         if (sameEffDtCount <= 1 && isBothValid) {
@@ -236,5 +237,10 @@ public final class CycleScheduleUtility {
         schedule.setExpiryTimestamp(getExpiryTimestamp());
 
         return schedule;
+    }
+
+    public static CycleChangeRequest cloneCycleChangeRequest(final CycleChangeRequest toClone) {
+        Gson gson = new Gson();
+        return gson.fromJson(gson.toJson(toClone), CycleChangeRequest.class);
     }
 }

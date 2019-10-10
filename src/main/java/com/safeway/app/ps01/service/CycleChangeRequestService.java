@@ -12,6 +12,8 @@ import java.util.Optional;
 import com.safeway.app.ps01.domain.CycleChangeRequest;
 import com.safeway.app.ps01.domain.CycleSchedule;
 import com.safeway.app.ps01.domain.enums.BufferDayEnum;
+import com.safeway.app.ps01.domain.enums.ChangeStatusEnum;
+import com.safeway.app.ps01.domain.enums.CycleChangeRequestTypeEnum;
 import com.safeway.app.ps01.domain.enums.OffsiteIndicatorEnum;
 import com.safeway.app.ps01.domain.enums.RunSequenceEnum;
 import com.safeway.app.ps01.exception.CycleChangeNotFoundException;
@@ -152,7 +154,8 @@ public class CycleChangeRequestService {
         } else {
             if (cycleChangeRequests.size() >= RunSequenceEnum.SECOND.getRunSequence()) {
                 // TODO: messaging template
-                throw new MaximumRunSchedulePerRunDateException("Maximum schedule per run date reached. Only two (2) same run date is accepted.");
+                throw new MaximumRunSchedulePerRunDateException(
+                        "Maximum schedule per run date reached. Only two (2) same run date is accepted.");
             }
 
             cycleChangeRequests.forEach(cycle -> {
@@ -220,5 +223,33 @@ public class CycleChangeRequestService {
                 DateUtil.getExpiryTimestamp());
 
         return validateCycleChangeEffectiveDate(prevWeek, nextWeek, submittedCycleChange);
+    }
+
+    @Transactional(readOnly = false)
+    public CycleChangeRequest approveCycleChangeRequest(Long id) {
+
+        // TODO: validate if user has the authority to approve
+
+        return cycChangeReqRepository.findById(id).map(existingCycleChange -> {
+
+            // TODO: if record exists, copy the record to a new object
+            CycleChangeRequest newCycleChange = cloneCycleChangeRequest(existingCycleChange);
+            newCycleChange.setId(0l); // remove the id of the current cycle change
+
+            newCycleChange.setChangeStatusName(ChangeStatusEnum.APPROVED.getChangeStatus());
+            
+            // TODO: this can be removed since default values are in DB2.
+            newCycleChange.setExpiryTimestamp(getExpiryTimestamp()); 
+            newCycleChange = cycChangeReqRepository.save(newCycleChange);
+
+            existingCycleChange.setExpiryTimestamp(expireNow());
+            existingCycleChange.setCycleChangeRequestType(CycleChangeRequestTypeEnum.BASE.getRequestType());
+            existingCycleChange.setChangeStatusName(ChangeStatusEnum.BASE.getChangeStatus());
+            existingCycleChange.setComment("Referenced to new Cycle Change ID: " + newCycleChange.getId());
+            cycChangeReqRepository.save(existingCycleChange);
+
+            return newCycleChange;
+        }).orElseThrow(() -> new CycleChangeNotFoundException("Cycle Change with ID: " + id + " does not exists."));
+        // TODO: messaging template
     }
 }
