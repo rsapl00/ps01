@@ -23,7 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class HostPostResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ResponseBody
-    @ExceptionHandler({Exception.class, HostPosDatabaseEntryCorruptedException.class})
+    @ExceptionHandler({ Exception.class, HostPosDatabaseEntryCorruptedException.class })
     public final ResponseEntity<Object> handleHostPosException(Exception ex, WebRequest request) throws Exception {
 
         HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
@@ -33,7 +33,8 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
     }
 
     @ResponseBody
-    @ExceptionHandler({MaximumRunSchedulePerRunDateException.class, CycleChangeRequestOffsiteException.class, InvalidEffectiveDate.class})
+    @ExceptionHandler({ MaximumRunSchedulePerRunDateException.class, CycleChangeRequestOffsiteException.class,
+            InvalidEffectiveDate.class, CycleChangeRequestApprovalException.class })
     public final ResponseEntity<Object> handleUnprocessableEntityExceptions(Exception ex, WebRequest request) {
 
         HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
@@ -41,7 +42,16 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
 
         return new ResponseEntity<>(exceptionResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
-    
+
+    @ResponseBody
+    @ExceptionHandler({ CycleChangeNotFoundException.class })
+    public final ResponseEntity<Object> handleCycleChangeNotFoundException(Exception ex, WebRequest request) {
+        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                Arrays.asList(ex.getMessage()), request.getDescription(false));
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+
     /**
      * Handles all Constraint validation exceptions for RequestBody parameters in
      * Controllers.

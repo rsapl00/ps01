@@ -98,11 +98,15 @@ public class CycleChangeRequestController {
     @PutMapping("/cyclechanges/{id}/approve")
     public ResponseEntity<?> approveCycleChangeRequest(@PathVariable Long id) throws URISyntaxException {
 
-        CycleChangeRequest approvedCycleChange = cycleChangeRequestService.approveCycleChangeRequest(id);
-
-        Resource<CycleChangeRequest> resource = assembler.toResource(approvedCycleChange);
+        Resource<CycleChangeRequest> resource = assembler
+                .toResource(cycleChangeRequestService.approveCycleChangeRequest(id));
 
         return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
+    }
+
+    @PutMapping("/cyclechanges/{id}/reject")
+    public ResponseEntity<?> rejectCycleChangeRequest(@PathVariable Long id) {
+        return ResponseEntity.ok(assembler.toResource(cycleChangeRequestService.rejectCycleChangeRequest(id)));
     }
 
     @DeleteMapping
