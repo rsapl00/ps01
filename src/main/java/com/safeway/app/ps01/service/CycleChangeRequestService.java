@@ -9,12 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.google.gson.Gson;
 import com.safeway.app.ps01.domain.CycleChangeRequest;
 import com.safeway.app.ps01.domain.CycleSchedule;
 import com.safeway.app.ps01.domain.enums.BufferDayEnum;
-import com.safeway.app.ps01.domain.enums.ChangeStatusEnum;
-import com.safeway.app.ps01.domain.enums.CycleChangeRequestTypeEnum;
 import com.safeway.app.ps01.domain.enums.OffsiteIndicatorEnum;
 import com.safeway.app.ps01.domain.enums.RunSequenceEnum;
 import com.safeway.app.ps01.exception.CycleChangeNotFoundException;
