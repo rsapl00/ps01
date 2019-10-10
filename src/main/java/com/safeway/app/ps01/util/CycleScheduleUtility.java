@@ -6,7 +6,6 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,14 +97,6 @@ public final class CycleScheduleUtility {
 
     public static Boolean validateCycleChangeEffectiveDate(final List<CycleChangeRequest> beforeCycleChanges,
             final List<CycleChangeRequest> afterCycleChanges, final CycleChangeRequest submittedCycleChange) {
-
-        // final List<CycleChangeRequest> descOrderCycleChange =
-        // beforeCycleChanges.stream()
-        // .sorted(Comparator.comparing(CycleChangeRequest::getEffectiveDate)).collect(Collectors.toList());
-
-        // final List<CycleChangeRequest> ascOrderCycleChange =
-        // afterCycleChanges.stream()
-        // .sorted(Comparator.comparing(CycleChangeRequest::getEffectiveDate)).collect(Collectors.toList());
 
         ValidEffectiveDates before = processEffectiveDateFromEarlierEffectiveDates(beforeCycleChanges,
                 submittedCycleChange);

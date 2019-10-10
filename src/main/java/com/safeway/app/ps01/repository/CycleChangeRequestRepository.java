@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CycleChangeRequestRepository extends JpaRepository<CycleChangeRequest, Long> {
 
-    public List<CycleChangeRequest> findByRunDateBetweenOrderByRunDateAsc(Date startDate, Date endDate);
+    public List<CycleChangeRequest> findByRunDateBetweenOrderByRunDateAscRunNumberAsc(Date startDate, Date endDate);
 
     public List<CycleChangeRequest> findByDivIdAndRunDateBetweenOrderByRunDateAsc(String divisionId, Date startRunDate,
             Date endRunDate);

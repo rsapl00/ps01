@@ -163,7 +163,7 @@ public class CycleChangeRequestService {
                 if (isEqual(cycle.getRunDate(), newCycleChange.getRunDate())
                         && isAfter(cycle.getEffectiveDate(), newCycleChange.getEffectiveDate())) {
                     // TODO: messaging template
-                    throw new InvalidEffectiveDate("Invalid Effective Date."
+                    throw new InvalidEffectiveDate("Invalid Effective Date. "
                             + "Specified run date has an effective date that is later than the request.");
                 }
 

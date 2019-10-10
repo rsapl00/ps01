@@ -12,6 +12,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.safeway.app.ps01.validation.ChronologicalOrderDateConstraint;
+import com.safeway.app.ps01.validation.RundateConstraint;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -50,6 +51,7 @@ public class CycleChangeRequest {
     private String divId;
 
     @NonNull
+    @RundateConstraint
     @Column(name = "RUN_DT")
     private Date runDate;
 

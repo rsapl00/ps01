@@ -6,6 +6,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.safeway.app.ps01.validation.ChronologicalOrderDateConstraint;
+import com.safeway.app.ps01.validation.RundateConstraint;
 
 import io.micrometer.core.lang.NonNull;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class CycleChangeSearchDTO {
     private String divisionId;
 
     @NonNull
+    @RundateConstraint
     private Date startDate;
 
     @NonNull

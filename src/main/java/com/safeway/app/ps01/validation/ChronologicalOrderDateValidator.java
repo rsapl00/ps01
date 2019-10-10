@@ -7,7 +7,7 @@ import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.beans.BeanWrapperImpl;
 
-public class ChronologicalOrderDatehValidator implements ConstraintValidator<ChronologicalOrderDateConstraint, Object> {
+public class ChronologicalOrderDateValidator implements ConstraintValidator<ChronologicalOrderDateConstraint, Object> {
 
     private String startDate;
     private String endDate;

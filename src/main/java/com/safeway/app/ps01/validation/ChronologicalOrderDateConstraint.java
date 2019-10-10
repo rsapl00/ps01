@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
-@Constraint(validatedBy = ChronologicalOrderDatehValidator.class)
+@Constraint(validatedBy = ChronologicalOrderDateValidator.class)
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ChronologicalOrderDateConstraint {
@@ -24,7 +24,7 @@ public @interface ChronologicalOrderDateConstraint {
     @interface List {
         ChronologicalOrderDateConstraint[] value();
     }
-
+    
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {}; 
 }
