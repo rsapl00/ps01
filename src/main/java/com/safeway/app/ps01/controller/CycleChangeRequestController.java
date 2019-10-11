@@ -142,12 +142,26 @@ public class CycleChangeRequestController {
                                 .forApprovalCycleChangeRequest(ids).stream().map(assembler::toResource)
                                 .collect(Collectors.toList());
 
-                return ResponseEntity
-                                .created(new URI(linkTo(methodOn(CycleChangeRequestController.class)
-                                                .forApprovalCycleChangeRequest(ids)).withSelfRel().getHref()))
+                return ResponseEntity.created(new URI(
+                                linkTo(methodOn(CycleChangeRequestController.class).forApprovalCycleChangeRequest(ids))
+                                                .withSelfRel().getHref()))
                                 .body(new Resources<>(approvedRequests,
                                                 linkTo(methodOn(CycleChangeRequestController.class)
                                                                 .forApprovalCycleChangeRequest(ids)).withSelfRel()));
+        }
+
+        @PutMapping("/cyclechanges/cancel")
+        public ResponseEntity<?> cancelCycleChangeRequest(@RequestBody List<Long> ids) throws URISyntaxException {
+                List<Resource<CycleChangeRequest>> approvedRequests = cycleChangeRequestService
+                                .cancelCycleChangeRequest(ids).stream().map(assembler::toResource)
+                                .collect(Collectors.toList());
+
+                return ResponseEntity.created(new URI(
+                                linkTo(methodOn(CycleChangeRequestController.class).cancelCycleChangeRequest(ids))
+                                                .withSelfRel().getHref()))
+                                .body(new Resources<>(approvedRequests,
+                                                linkTo(methodOn(CycleChangeRequestController.class)
+                                                                .cancelCycleChangeRequest(ids)).withSelfRel()));
         }
 
         @DeleteMapping

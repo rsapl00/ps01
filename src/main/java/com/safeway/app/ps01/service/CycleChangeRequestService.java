@@ -22,6 +22,7 @@ import com.safeway.app.ps01.domain.enums.OffsiteIndicatorEnum;
 import com.safeway.app.ps01.domain.enums.RunSequenceEnum;
 import com.safeway.app.ps01.exception.CycleChangeNotFoundException;
 import com.safeway.app.ps01.exception.CycleChangeRequestApprovalException;
+import com.safeway.app.ps01.exception.CycleChangeRequestCancelException;
 import com.safeway.app.ps01.exception.CycleChangeRequestOffsiteException;
 import com.safeway.app.ps01.exception.HostPosDatabaseEntryCorruptedException;
 import com.safeway.app.ps01.exception.InvalidEffectiveDate;
@@ -267,6 +268,39 @@ public class CycleChangeRequestService {
         }).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = false)
+    public List<CycleChangeRequest> forApprovalCycleChangeRequest(List<Long> ids) {
+        return searchCycleChangesByIds(ids).stream().map(cycle -> {
+            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.FOR_APPROVAL, cycle);
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = false)
+    public List<CycleChangeRequest> cancelCycleChangeRequest(List<Long> ids) {
+        return searchCycleChangesByIds(ids).stream().map(cycle -> {
+
+            if (cycle.getChangeStatusName().equals(ChangeStatusEnum.APPROVED.getChangeStatus())
+                    || cycle.getChangeStatusName().equals(ChangeStatusEnum.REJECTED.getChangeStatus())
+                    || cycle.getChangeStatusName().equals(ChangeStatusEnum.BASE.getChangeStatus())) {
+                throw new CycleChangeRequestCancelException(
+                        "Cancelation error: Only SAVED/FOR APPROVAL can be canceled.");
+            }
+
+            CycleChangeRequest canceled = cloneCycleChangeRequest(cycle);
+            canceled.setId(0l);
+            canceled.setCycleChangeRequestType(CycleChangeRequestTypeEnum.CANCEL.getRequestType());
+
+            // TODO: this can be removed since default values are in DB2.
+            canceled.setExpiryTimestamp(getExpiryTimestamp());
+            canceled = cycChangeReqRepository.save(canceled);
+
+            cycle.setExpiryTimestamp(expireNow());
+            cycle.setComment("Referenced to new Cycle Change ID: " + canceled.getId());
+
+            return canceled;
+        }).collect(Collectors.toList());
+    }
+
     private List<CycleChangeRequest> searchCycleChangesByIds(List<Long> ids) {
         List<CycleChangeRequest> existingCycleChanges = cycChangeReqRepository.findByIdIn(ids);
 
@@ -311,12 +345,5 @@ public class CycleChangeRequestService {
         existingCycleChange.setComment("Referenced to new Cycle Change ID: " + newApprovedCycle.getId());
 
         return newApprovedCycle;
-    }
-
-    @Transactional(readOnly = false)
-    public List<CycleChangeRequest> forApprovalCycleChangeRequest(List<Long> ids) {
-        return searchCycleChangesByIds(ids).stream().map(cycle -> {
-            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.FOR_APPROVAL, cycle);
-        }).collect(Collectors.toList());
     }
 }

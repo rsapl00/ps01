@@ -22,80 +22,82 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestController
 public class HostPostResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ResponseBody
-    @ExceptionHandler({ Exception.class, HostPosDatabaseEntryCorruptedException.class })
-    public final ResponseEntity<Object> handleHostPosException(Exception ex, WebRequest request) throws Exception {
+        @ResponseBody
+        @ExceptionHandler({ Exception.class, HostPosDatabaseEntryCorruptedException.class })
+        public final ResponseEntity<Object> handleHostPosException(Exception ex, WebRequest request) throws Exception {
 
-        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
-                Arrays.asList(ex.getMessage()), request.getDescription(false));
+                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                                Arrays.asList(ex.getMessage()), request.getDescription(false));
 
-        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+                return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-    @ResponseBody
-    @ExceptionHandler({ MaximumRunSchedulePerRunDateException.class, CycleChangeRequestOffsiteException.class,
-            InvalidEffectiveDate.class, CycleChangeRequestApprovalException.class })
-    public final ResponseEntity<Object> handleUnprocessableEntityExceptions(Exception ex, WebRequest request) {
+        @ResponseBody
+        @ExceptionHandler({ MaximumRunSchedulePerRunDateException.class, CycleChangeRequestOffsiteException.class,
+                        InvalidEffectiveDate.class, CycleChangeRequestApprovalException.class,
+                        CycleChangeRequestCancelException.class })
+        public final ResponseEntity<Object> handleUnprocessableEntityExceptions(Exception ex, WebRequest request) {
 
-        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
-                Arrays.asList(ex.getMessage()), request.getDescription(false));
+                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                                Arrays.asList(ex.getMessage()), request.getDescription(false));
 
-        return new ResponseEntity<>(exceptionResponse, HttpStatus.UNPROCESSABLE_ENTITY);
-    }
+                return new ResponseEntity<>(exceptionResponse, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
 
-    @ResponseBody
-    @ExceptionHandler({ CycleChangeNotFoundException.class })
-    public final ResponseEntity<Object> handleCycleChangeNotFoundException(Exception ex, WebRequest request) {
-        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
-                Arrays.asList(ex.getMessage()), request.getDescription(false));
+        @ResponseBody
+        @ExceptionHandler({ CycleChangeNotFoundException.class })
+        public final ResponseEntity<Object> handleCycleChangeNotFoundException(Exception ex, WebRequest request) {
+                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                                Arrays.asList(ex.getMessage()), request.getDescription(false));
 
-        return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
-    }
+                return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
+        }
 
-    /**
-     * Handles all Constraint validation exceptions for RequestBody parameters in
-     * Controllers.
-     * 
-     * Example: @RequestBody CycleChangeRequest
-     */
-    @ResponseBody
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+        /**
+         * Handles all Constraint validation exceptions for RequestBody parameters in
+         * Controllers.
+         * 
+         * Example: @RequestBody CycleChangeRequest
+         */
+        @ResponseBody
+        @Override
+        protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                        HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        List<String> errors = ex.getBindingResult().getAllErrors().stream().map(x -> x.getDefaultMessage())
-                .collect(Collectors.toList());
+                List<String> errors = ex.getBindingResult().getAllErrors().stream().map(x -> x.getDefaultMessage())
+                                .collect(Collectors.toList());
 
-        HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(), errors,
-                String.valueOf(ex.getBindingResult().getAllErrors().get(0)));
+                HostPosExceptionResource exceptionResource = new HostPosExceptionResource(new Date(), errors,
+                                String.valueOf(ex.getBindingResult().getAllErrors().get(0)));
 
-        return new ResponseEntity<>(exceptionResource, status);
-    }
+                return new ResponseEntity<>(exceptionResource, status);
+        }
 
-    @ResponseBody
-    @Override
-    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
-            HttpStatus status, WebRequest request) {
+        @ResponseBody
+        @Override
+        protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
+                        HttpStatus status, WebRequest request) {
 
-        String errorMessage = "Invalid value: " + ex.getValue() + ". For date, value should be in yyyy-MM-dd format.";
+                String errorMessage = "Invalid value: " + ex.getValue()
+                                + ". For date, value should be in yyyy-MM-dd format.";
 
-        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
-                Arrays.asList(errorMessage), ex.getMessage());
+                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                                Arrays.asList(errorMessage), ex.getMessage());
 
-        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
-    }
+                return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+        }
 
-    @ResponseBody
-    @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+        @ResponseBody
+        @Override
+        protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+                        HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        String errorMessage = "Invalid request. Check your request body for any missing values.";
+                String errorMessage = "Invalid request. Check your request body for any missing values.";
 
-        HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
-                Arrays.asList(errorMessage), ex.getMessage());
+                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                                Arrays.asList(errorMessage), ex.getMessage());
 
-        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
-    }
+                return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+        }
 
 }
