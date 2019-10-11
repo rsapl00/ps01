@@ -6,6 +6,7 @@ import static com.safeway.app.ps01.util.DateUtil.*;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -262,7 +263,7 @@ public class CycleChangeRequestService {
     @Transactional(readOnly = false)
     public List<CycleChangeRequest> rejectMultipleCycleChangeRequest(final List<Long> ids) {
         return searchCycleChangesByIds(ids).stream().map(cycle -> {
-            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.APPROVED, cycle);
+            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.REJECTED, cycle);
         }).collect(Collectors.toList());
     }
 
@@ -279,21 +280,26 @@ public class CycleChangeRequestService {
     private CycleChangeRequest returnApprovedOrRejectCycleChange(ChangeStatusEnum changeType,
             CycleChangeRequest existingCycleChange) {
 
-        if (!existingCycleChange.getChangeStatusName().equals(ChangeStatusEnum.FOR_APPROVAL.getChangeStatus())) {
-            String message = "Approval";
-            if (ChangeStatusEnum.REJECTED == changeType) {
-                message = "Rejection";
+        if (changeType == ChangeStatusEnum.FOR_APPROVAL) {
+            if (!existingCycleChange.getChangeStatusName().equals(ChangeStatusEnum.SAVED.getChangeStatus())) {
+                throw new CycleChangeRequestApprovalException(
+                        "For Approval Error: Cycle Change should be in SAVED status.");
             }
-            throw new CycleChangeRequestApprovalException(
-                    message + " Error: Cycle Change should be in for approval status.");
+        } else if ((changeType == ChangeStatusEnum.APPROVED || changeType == ChangeStatusEnum.REJECTED)) {
+            if (!existingCycleChange.getChangeStatusName().equals(ChangeStatusEnum.FOR_APPROVAL.getChangeStatus())) {
+
+                String message = "Approval";
+                if (ChangeStatusEnum.REJECTED == changeType) {
+                    message = "Rejection";
+                }
+                throw new CycleChangeRequestApprovalException(
+                        message + " Error: Cycle Change should be in FOR APPROVAL status.");
+            }
         }
 
         CycleChangeRequest newApprovedCycle = cloneCycleChangeRequest(existingCycleChange);
         newApprovedCycle.setId(0l);
-
-        newApprovedCycle.setChangeStatusName(
-                changeType == ChangeStatusEnum.APPROVED ? ChangeStatusEnum.APPROVED.getChangeStatus()
-                        : ChangeStatusEnum.REJECTED.getChangeStatus());
+        newApprovedCycle.setChangeStatusName(changeType.getChangeStatus());
 
         // TODO: this can be removed since default values are in DB2.
         newApprovedCycle.setExpiryTimestamp(getExpiryTimestamp());
@@ -305,5 +311,12 @@ public class CycleChangeRequestService {
         existingCycleChange.setComment("Referenced to new Cycle Change ID: " + newApprovedCycle.getId());
 
         return newApprovedCycle;
+    }
+
+    @Transactional(readOnly = false)
+    public List<CycleChangeRequest> forApprovalCycleChangeRequest(List<Long> ids) {
+        return searchCycleChangesByIds(ids).stream().map(cycle -> {
+            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.FOR_APPROVAL, cycle);
+        }).collect(Collectors.toList());
     }
 }
