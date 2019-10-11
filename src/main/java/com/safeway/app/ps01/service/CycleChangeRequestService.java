@@ -8,6 +8,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.safeway.app.ps01.domain.CycleChangeRequest;
 import com.safeway.app.ps01.domain.CycleSchedule;
@@ -27,6 +30,7 @@ import com.safeway.app.ps01.repository.CycleScheduleRepository;
 import com.safeway.app.ps01.util.CycleScheduleUtility;
 import com.safeway.app.ps01.util.DateUtil;
 
+import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -232,57 +236,74 @@ public class CycleChangeRequestService {
         // TODO: validate if user has the authority to approve
 
         return cycChangeReqRepository.findById(id).map(existingCycleChange -> {
-
-            if (!existingCycleChange.getChangeStatusName().equals(ChangeStatusEnum.FOR_APPROVAL.getChangeStatus())) {
-                throw new CycleChangeRequestApprovalException("Approval Error: Cycle Change should be in for approval status.");
-            }
-
-            // TODO: if record exists, copy the record to a new object
-            CycleChangeRequest newCycleChange = cloneCycleChangeRequest(existingCycleChange);
-            newCycleChange.setId(0l); // remove the id of the current cycle change
-
-            newCycleChange.setChangeStatusName(ChangeStatusEnum.APPROVED.getChangeStatus());
-            
-            // TODO: this can be removed since default values are in DB2.
-            newCycleChange.setExpiryTimestamp(getExpiryTimestamp()); 
-            newCycleChange = cycChangeReqRepository.save(newCycleChange);
-
-            existingCycleChange.setExpiryTimestamp(expireNow());
-            existingCycleChange.setCycleChangeRequestType(CycleChangeRequestTypeEnum.BASE.getRequestType());
-            existingCycleChange.setChangeStatusName(ChangeStatusEnum.BASE.getChangeStatus());
-            existingCycleChange.setComment("Referenced to new Cycle Change ID: " + newCycleChange.getId());
-            cycChangeReqRepository.save(existingCycleChange);
-
-            return newCycleChange;
-        }).orElseThrow(() -> new CycleChangeNotFoundException("Can't approve cycle change as the record doesn't exists."));
+            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.APPROVED, existingCycleChange);
+        }).orElseThrow(
+                () -> new CycleChangeNotFoundException("Can't approve cycle change as the record doesn't exists."));
         // TODO: messaging template
     }
 
     @Transactional(readOnly = false)
-	public CycleChangeRequest rejectCycleChangeRequest(Long id) {
+    public CycleChangeRequest rejectCycleChangeRequest(Long id) {
 
         return cycChangeReqRepository.findById(id).map(forReject -> {
+            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.REJECTED, forReject);
+            // TODO: messaging template
+        }).orElseThrow(
+                () -> new CycleChangeNotFoundException("Can't reject cycle change as the record doesn't exists."));
+    }
 
-            if (!forReject.getChangeStatusName().equals(ChangeStatusEnum.FOR_APPROVAL.getChangeStatus())) {
-                throw new CycleChangeRequestApprovalException("Rejection error: Cycle Change should be in for approval status.");
+    @Transactional(readOnly = false)
+    public List<CycleChangeRequest> approveMultipleCycleChangeRequest(final List<Long> ids) {
+        return searchCycleChangesByIds(ids).stream().map(cycle -> {
+            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.APPROVED, cycle);
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = false)
+    public List<CycleChangeRequest> rejectMultipleCycleChangeRequest(final List<Long> ids) {
+        return searchCycleChangesByIds(ids).stream().map(cycle -> {
+            return returnApprovedOrRejectCycleChange(ChangeStatusEnum.APPROVED, cycle);
+        }).collect(Collectors.toList());
+    }
+
+    private List<CycleChangeRequest> searchCycleChangesByIds(List<Long> ids) {
+        List<CycleChangeRequest> existingCycleChanges = cycChangeReqRepository.findByIdIn(ids);
+
+        if (existingCycleChanges.size() < ids.size()) {
+            throw new CycleChangeNotFoundException("Record not found on one or more cycle change request.");
+        }
+
+        return existingCycleChanges;
+    }
+
+    private CycleChangeRequest returnApprovedOrRejectCycleChange(ChangeStatusEnum changeType,
+            CycleChangeRequest existingCycleChange) {
+
+        if (!existingCycleChange.getChangeStatusName().equals(ChangeStatusEnum.FOR_APPROVAL.getChangeStatus())) {
+            String message = "Approval";
+            if (ChangeStatusEnum.REJECTED == changeType) {
+                message = "Rejection";
             }
-            
-            CycleChangeRequest rejected = cloneCycleChangeRequest(forReject);
-            rejected.setId(0l);
-            rejected.setChangeStatusName(ChangeStatusEnum.REJECTED.getChangeStatus());
+            throw new CycleChangeRequestApprovalException(
+                    message + " Error: Cycle Change should be in for approval status.");
+        }
 
-            // TODO: this can be removed since DB2 has default value for this column.
-            rejected.setExpiryTimestamp(getExpiryTimestamp());
-            rejected = cycChangeReqRepository.save(rejected);
+        CycleChangeRequest newApprovedCycle = cloneCycleChangeRequest(existingCycleChange);
+        newApprovedCycle.setId(0l);
 
-            forReject.setExpiryTimestamp(expireNow());
-            forReject.setCycleChangeRequestType(CycleChangeRequestTypeEnum.BASE.getRequestType());
-            forReject.setChangeStatusName(ChangeStatusEnum.BASE.getChangeStatus());
-            forReject.setComment("Reference to rejected Cycle Change ID: " + rejected.getId());
-            cycChangeReqRepository.save(forReject);
+        newApprovedCycle.setChangeStatusName(
+                changeType == ChangeStatusEnum.APPROVED ? ChangeStatusEnum.APPROVED.getChangeStatus()
+                        : ChangeStatusEnum.REJECTED.getChangeStatus());
 
-            return rejected;
-            //TODO: messaging template
-        }).orElseThrow(() -> new CycleChangeNotFoundException("Can't reject cycle change as the record doesn't exists."));
-	}
+        // TODO: this can be removed since default values are in DB2.
+        newApprovedCycle.setExpiryTimestamp(getExpiryTimestamp());
+        newApprovedCycle = cycChangeReqRepository.save(newApprovedCycle);
+
+        existingCycleChange.setExpiryTimestamp(expireNow());
+        existingCycleChange.setCycleChangeRequestType(CycleChangeRequestTypeEnum.BASE.getRequestType());
+        existingCycleChange.setChangeStatusName(ChangeStatusEnum.BASE.getChangeStatus());
+        existingCycleChange.setComment("Referenced to new Cycle Change ID: " + newApprovedCycle.getId());
+
+        return newApprovedCycle;
+    }
 }

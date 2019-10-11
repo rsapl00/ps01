@@ -95,7 +95,7 @@ public class CycleChangeRequestController {
         return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
     }
 
-    @PutMapping("/cyclechanges/{id}/approve")
+    @PutMapping("/cyclechanges/approve/{id}")
     public ResponseEntity<?> approveCycleChangeRequest(@PathVariable Long id) throws URISyntaxException {
 
         Resource<CycleChangeRequest> resource = assembler
@@ -104,7 +104,23 @@ public class CycleChangeRequestController {
         return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
     }
 
-    @PutMapping("/cyclechanges/{id}/reject")
+    @PutMapping("/cyclechanges/approve")
+    public ResponseEntity<?> approveMultipleCycleChangeRequest(@RequestBody List<Long> ids) throws URISyntaxException {
+
+        List<Resource<CycleChangeRequest>> approvedRequests = cycleChangeRequestService
+                .approveMultipleCycleChangeRequest(ids).stream().map(assembler::toResource)
+                .collect(Collectors.toList());
+
+        return ResponseEntity
+                .created(new URI(
+                        linkTo(methodOn(CycleChangeRequestController.class).approveMultipleCycleChangeRequest(ids))
+                                .withSelfRel().getHref()))
+                .body(new Resources<>(approvedRequests,
+                        linkTo(methodOn(CycleChangeRequestController.class).approveMultipleCycleChangeRequest(ids))
+                                .withSelfRel()));
+    }
+
+    @PutMapping("/cyclechanges/reject/{id}")
     public ResponseEntity<?> rejectCycleChangeRequest(@PathVariable Long id) {
         return ResponseEntity.ok(assembler.toResource(cycleChangeRequestService.rejectCycleChangeRequest(id)));
     }

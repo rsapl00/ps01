@@ -17,9 +17,7 @@ public class CycleChangeRequestResourceAssembler
     public Resource<CycleChangeRequest> toResource(CycleChangeRequest cycleChangeRequest) {
         return new Resource<>(cycleChangeRequest,
                 linkTo(methodOn(CycleChangeRequestController.class).getCycleChangeById(cycleChangeRequest.getId()))
-                        .withSelfRel(),
-                linkTo(methodOn(CycleChangeRequestController.class).getAllCycleChangeRequests())
-                        .withRel("cyclechanges"));
+                        .withSelfRel());
     }
 
 }
