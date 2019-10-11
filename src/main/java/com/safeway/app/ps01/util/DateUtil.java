@@ -10,7 +10,7 @@ import com.safeway.app.ps01.domain.enums.DayEnum;
 
 public final class DateUtil {
 
-    public static final String EXPIRATION_TS = "9999-12-31 23:59:59";
+    public static final String EXPIRATION_TS = "9999-12-31 00:00:00";
     public static final Integer BUFFER_DAYS = 7;
 
     /**
