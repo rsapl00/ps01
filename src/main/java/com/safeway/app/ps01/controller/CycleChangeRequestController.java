@@ -5,11 +5,14 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.google.gson.Gson;
 import com.safeway.app.ps01.controller.resource.CycleChangeSearchDTO;
 import com.safeway.app.ps01.controller.resource.assembler.CycleChangeRequestResourceAssembler;
 import com.safeway.app.ps01.domain.CycleChangeRequest;
@@ -123,6 +126,22 @@ public class CycleChangeRequestController {
     @PutMapping("/cyclechanges/reject/{id}")
     public ResponseEntity<?> rejectCycleChangeRequest(@PathVariable Long id) {
         return ResponseEntity.ok(assembler.toResource(cycleChangeRequestService.rejectCycleChangeRequest(id)));
+    }
+
+    @PutMapping("/cyclechanges/reject")
+    public ResponseEntity<?> rejectMultipleCycleChangeRequest(@RequestBody List<Long> ids) throws URISyntaxException {
+
+        List<Resource<CycleChangeRequest>> approvedRequests = cycleChangeRequestService
+                .rejectMultipleCycleChangeRequest(ids).stream().map(assembler::toResource)
+                .collect(Collectors.toList());
+
+        return ResponseEntity
+                .created(new URI(
+                        linkTo(methodOn(CycleChangeRequestController.class).rejectMultipleCycleChangeRequest(ids))
+                                .withSelfRel().getHref()))
+                .body(new Resources<>(approvedRequests,
+                        linkTo(methodOn(CycleChangeRequestController.class).rejectMultipleCycleChangeRequest(ids))
+                                .withSelfRel()));
     }
 
     @DeleteMapping
