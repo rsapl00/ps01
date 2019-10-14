@@ -7,10 +7,10 @@
 		<version>2.1.8.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.safeway.app</groupId>
-	<artifactId>ps01</artifactId>
+	<groupId>com.albertsons.app</groupId>
+	<artifactId>ps01-web-sprboot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ps01</name>
+	<name>PS01</name>
 	<description>Host POS Temporary Cycle Change Automation</description>
 	<packaging>war</packaging>
 
