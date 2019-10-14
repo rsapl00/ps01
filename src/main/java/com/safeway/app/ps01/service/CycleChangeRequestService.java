@@ -6,11 +6,8 @@ import static com.safeway.app.ps01.util.DateUtil.*;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.safeway.app.ps01.domain.CycleChangeRequest;
@@ -32,7 +29,6 @@ import com.safeway.app.ps01.repository.CycleScheduleRepository;
 import com.safeway.app.ps01.util.CycleScheduleUtility;
 import com.safeway.app.ps01.util.DateUtil;
 
-import org.springframework.hateoas.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
