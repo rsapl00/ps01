@@ -19,7 +19,6 @@ import com.albertsons.app.ps01.service.CycleChangeRequestService;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,8 +52,8 @@ public class CycleChangeRequestController {
         public ResponseEntity<?> submitNewCycleChange(@Valid @RequestBody CycleChangeRequestDTO newCycleChange)
                         throws URISyntaxException {
 
-                Resource<CycleChangeRequest> resource = assembler
-                                .toResource(cycleChangeRequestService.saveCycleChangeRequest(newCycleChange.getCycleChangeRequest()));
+                Resource<CycleChangeRequest> resource = assembler.toResource(cycleChangeRequestService
+                                .saveCycleChangeRequest(newCycleChange.getCycleChangeRequest()));
 
                 return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
         }
@@ -88,14 +87,12 @@ public class CycleChangeRequestController {
                                                 .withSelfRel());
         }
 
-        @PutMapping("/cyclechanges/{id}")
-        public ResponseEntity<?> updateCycleChangeRequest(@RequestBody CycleChangeRequest cycleChangeRequest,
-                        @PathVariable Long id) throws URISyntaxException {
+        @PutMapping("/cyclechanges/update")
+        public ResponseEntity<?> updateCycleChangeRequest(@Valid @RequestBody CycleChangeRequestDTO cycleChangeRequest)
+                        throws URISyntaxException {
 
-                // TODO: call service
-                CycleChangeRequest updatedCycleChange = new CycleChangeRequest();
-
-                Resource<CycleChangeRequest> resource = assembler.toResource(updatedCycleChange);
+                Resource<CycleChangeRequest> resource = assembler.toResource(cycleChangeRequestService
+                                .updateCycleChangeRequest(cycleChangeRequest.getCycleChangeRequest()));
 
                 return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
         }
@@ -159,14 +156,5 @@ public class CycleChangeRequestController {
                                 .body(new Resources<>(approvedRequests,
                                                 linkTo(methodOn(CycleChangeRequestController.class)
                                                                 .cancelCycleChangeRequest(ids)).withSelfRel()));
-        }
-
-        @DeleteMapping
-        public ResponseEntity<?> deleteCycleChangeRequest(@PathVariable Long id) {
-
-                // TODO: call delete service; delete service only put expiration date on the
-                // record.
-
-                return ResponseEntity.noContent().build();
         }
 }

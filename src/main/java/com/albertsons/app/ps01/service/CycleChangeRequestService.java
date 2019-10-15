@@ -6,8 +6,9 @@ import static com.albertsons.app.ps01.util.DateUtil.*;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.albertsons.app.ps01.domain.CycleChangeRequest;
@@ -118,15 +119,9 @@ public class CycleChangeRequestService {
     }
 
     public CycleChangeRequest findById(final Long id) {
-
-        Optional<CycleChangeRequest> optional = cycChangeReqRepository.findById(id);
-
-        if (!optional.isPresent()) {
-            // TODO: messaging template
-            throw new CycleChangeNotFoundException("Cycle Change Request does not exist with ID " + id);
-        }
-
-        return optional.get();
+        return cycChangeReqRepository.findById(id).orElseThrow(() -> {
+            throw new CycleChangeNotFoundException("Cycle Change Request not found.");
+        });
     }
 
     public List<CycleChangeRequest> findAll() {
@@ -213,7 +208,7 @@ public class CycleChangeRequestService {
         return newCycleChangeRequests.size() > 0 ? newCycleChangeRequests.get(0) : null;
     }
 
-    private boolean validateEffectiveDate(CycleChangeRequest submittedCycleChange) {
+    private boolean validateEffectiveDate(final CycleChangeRequest submittedCycleChange) {
 
         Date runDate = submittedCycleChange.getRunDate();
 
@@ -229,7 +224,7 @@ public class CycleChangeRequestService {
     }
 
     @Transactional(readOnly = false)
-    public CycleChangeRequest approveCycleChangeRequest(Long id) {
+    public CycleChangeRequest approveCycleChangeRequest(final Long id) {
 
         // TODO: validate if user has the authority to approve
 
@@ -265,14 +260,14 @@ public class CycleChangeRequestService {
     }
 
     @Transactional(readOnly = false)
-    public List<CycleChangeRequest> forApprovalCycleChangeRequest(List<Long> ids) {
+    public List<CycleChangeRequest> forApprovalCycleChangeRequest(final List<Long> ids) {
         return searchCycleChangesByIds(ids).stream().map(cycle -> {
             return returnApprovedOrRejectCycleChange(ChangeStatusEnum.FOR_APPROVAL, cycle);
         }).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = false)
-    public List<CycleChangeRequest> cancelCycleChangeRequest(List<Long> ids) {
+    public List<CycleChangeRequest> cancelCycleChangeRequest(final List<Long> ids) {
         return searchCycleChangesByIds(ids).stream().map(cycle -> {
 
             if (cycle.getChangeStatusName().equals(ChangeStatusEnum.APPROVED.getChangeStatus())
@@ -297,7 +292,7 @@ public class CycleChangeRequestService {
         }).collect(Collectors.toList());
     }
 
-    private List<CycleChangeRequest> searchCycleChangesByIds(List<Long> ids) {
+    private List<CycleChangeRequest> searchCycleChangesByIds(final List<Long> ids) {
         List<CycleChangeRequest> existingCycleChanges = cycChangeReqRepository.findByIdIn(ids);
 
         if (existingCycleChanges.size() < ids.size()) {
@@ -307,8 +302,8 @@ public class CycleChangeRequestService {
         return existingCycleChanges;
     }
 
-    private CycleChangeRequest returnApprovedOrRejectCycleChange(ChangeStatusEnum changeType,
-            CycleChangeRequest existingCycleChange) {
+    private CycleChangeRequest returnApprovedOrRejectCycleChange(final ChangeStatusEnum changeType,
+            final CycleChangeRequest existingCycleChange) {
 
         if (changeType == ChangeStatusEnum.FOR_APPROVAL) {
             if (!existingCycleChange.getChangeStatusName().equals(ChangeStatusEnum.SAVED.getChangeStatus())) {
@@ -342,4 +337,46 @@ public class CycleChangeRequestService {
 
         return newApprovedCycle;
     }
-}
+
+    @Transactional(readOnly = false)
+    public CycleChangeRequest updateCycleChangeRequest(final CycleChangeRequest cycleChangeRequest) {
+
+        final List<CycleChangeRequest> existingCycles = cycChangeReqRepository.findByDivIdAndRunDateAndNotExpired(
+                cycleChangeRequest.getDivId(), cycleChangeRequest.getRunDate(), DateUtil.getExpiryTimestamp());
+
+        return cycChangeReqRepository.findById(cycleChangeRequest.getId()).map(toBeUpdatedCycle -> {
+
+            // final List<CycleChangeRequest> existingCycles = map.get(true);
+
+            CycleChangeRequest newUpdateRequest = cloneCycleChangeRequest(toBeUpdatedCycle);
+            newUpdateRequest.setId(0l); // remove id to create a new record
+            newUpdateRequest.setRunDate(cycleChangeRequest.getRunDate());
+            newUpdateRequest.setEffectiveDate(cycleChangeRequest.getEffectiveDate());
+            newUpdateRequest.setOffsiteIndicator(cycleChangeRequest.getOffsiteIndicator());
+
+            if (existingCycles.isEmpty()) {
+                newUpdateRequest = cycChangeReqRepository.save(createNewCycleChangeRequest(newUpdateRequest, RunSequenceEnum.FIRST));
+            } else {
+
+                if (isEqual(toBeUpdatedCycle.getRunDate(), newUpdateRequest.getRunDate()) 
+                    && isEqual(toBeUpdatedCycle.getEffectiveDate(), newUpdateRequest.getEffectiveDate())) {
+                    newUpdateRequest = cycChangeReqRepository.save(createNewCycleChangeRequest(newUpdateRequest, 
+                        RunSequenceEnum.getRunSequenceEnum(toBeUpdatedCycle.getRunNumber())));              
+                } else {
+                    newUpdateRequest = cycChangeReqRepository.save(createNewCycleChangeRequest(newUpdateRequest, RunSequenceEnum.SECOND));
+                }
+            }
+
+            toBeUpdatedCycle.setExpiryTimestamp(expireNow());
+            toBeUpdatedCycle.setCycleChangeRequestType(CycleChangeRequestTypeEnum.BASE.getRequestType());
+            toBeUpdatedCycle.setChangeStatusName(ChangeStatusEnum.BASE.getChangeStatus());
+            toBeUpdatedCycle.setComment("Referenced to new Cycle Change ID: " + newUpdateRequest.getId());
+
+            return newUpdateRequest;
+
+        }).orElseThrow(()->
+
+    {
+            throw new CycleChangeNotFoundException("Cycle Change Request not found.");
+        });
+}}

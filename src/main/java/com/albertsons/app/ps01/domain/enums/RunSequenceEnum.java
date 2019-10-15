@@ -14,4 +14,15 @@ public enum RunSequenceEnum {
     public int getRunSequence() {
         return this.sequence;
     }
+
+    public static RunSequenceEnum getRunSequenceEnum(int sequence) {
+
+        for (RunSequenceEnum seq : RunSequenceEnum.values()) {
+            if (seq.getRunSequence() == sequence) {
+                return seq;
+            }
+        }
+
+        return RunSequenceEnum.FIRST;
+    }
 }

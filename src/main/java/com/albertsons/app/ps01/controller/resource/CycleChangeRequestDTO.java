@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 
 import com.albertsons.app.ps01.domain.CycleChangeRequest;
 import com.albertsons.app.ps01.validation.ChronologicalOrderDateConstraint;
+import com.albertsons.app.ps01.validation.CycleChangeRequestConstraint;
 import com.albertsons.app.ps01.validation.RundateConstraint;
 
 import lombok.Data;
@@ -19,7 +20,10 @@ import lombok.NonNull;
 @NoArgsConstructor
 @ChronologicalOrderDateConstraint.List({
         @ChronologicalOrderDateConstraint(startDate = "runDate", endDate = "effectiveDate", message = "Effective date should be later than run date.") })
+@CycleChangeRequestConstraint
 public class CycleChangeRequestDTO {
+
+    private Long id;
 
     @NonNull
     @NotNull(message = "Division ID is required.")
@@ -40,6 +44,7 @@ public class CycleChangeRequestDTO {
 
     public CycleChangeRequest getCycleChangeRequest() {
         CycleChangeRequest request = new CycleChangeRequest();
+        request.setId(this.id);
         request.setDivId(this.divId);
         request.setRunDate(this.runDate);
         request.setEffectiveDate(this.effectiveDate);
