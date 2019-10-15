@@ -51,7 +51,6 @@ public class CycleChangeRequest {
     private String divId;
 
     @NonNull
-    @RundateConstraint
     @Column(name = "RUN_DT")
     private Date runDate;
 

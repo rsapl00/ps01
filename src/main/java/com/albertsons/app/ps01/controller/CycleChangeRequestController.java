@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.albertsons.app.ps01.controller.resource.CycleChangeRequestDTO;
 import com.albertsons.app.ps01.controller.resource.CycleChangeSearchDTO;
 import com.albertsons.app.ps01.controller.resource.assembler.CycleChangeRequestResourceAssembler;
 import com.albertsons.app.ps01.domain.CycleChangeRequest;
@@ -49,11 +50,11 @@ public class CycleChangeRequestController {
         }
 
         @PostMapping("/cyclechanges")
-        public ResponseEntity<?> submitNewCycleChange(@Valid @RequestBody CycleChangeRequest newCycleChange)
+        public ResponseEntity<?> submitNewCycleChange(@Valid @RequestBody CycleChangeRequestDTO newCycleChange)
                         throws URISyntaxException {
 
                 Resource<CycleChangeRequest> resource = assembler
-                                .toResource(cycleChangeRequestService.saveCycleChangeRequest(newCycleChange));
+                                .toResource(cycleChangeRequestService.saveCycleChangeRequest(newCycleChange.getCycleChangeRequest()));
 
                 return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
         }

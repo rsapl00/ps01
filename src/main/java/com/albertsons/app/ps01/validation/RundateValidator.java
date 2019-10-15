@@ -9,6 +9,9 @@ import javax.validation.ConstraintValidatorContext;
 public class RundateValidator implements ConstraintValidator<RundateConstraint, Date> {
 
     @Override
+    public void initialize(RundateConstraint constraintAnnotation) {}
+    
+    @Override
     public boolean isValid(Date value, ConstraintValidatorContext context) {
         
         LocalDate date = value.toLocalDate();
