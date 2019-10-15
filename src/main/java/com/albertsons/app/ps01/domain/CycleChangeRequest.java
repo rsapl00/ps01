@@ -12,7 +12,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.albertsons.app.ps01.validation.ChronologicalOrderDateConstraint;
-import com.albertsons.app.ps01.validation.RundateConstraint;
 
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;

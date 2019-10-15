@@ -8,8 +8,6 @@ import com.albertsons.app.ps01.domain.CycleChangeRequest;
 import com.albertsons.app.ps01.validation.ChronologicalOrderDateConstraint;
 import com.albertsons.app.ps01.validation.RundateConstraint;
 
-import org.springframework.data.annotation.CreatedBy;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
