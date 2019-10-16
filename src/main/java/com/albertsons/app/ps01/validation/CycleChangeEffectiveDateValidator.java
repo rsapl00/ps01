@@ -32,12 +32,12 @@ public class CycleChangeEffectiveDateValidator extends Validator {
             return false;
         }
 
-        final Boolean isAddAction = dto.getId().equals(Long.valueOf(0l)) ? true : false;
+        // final Boolean isAddAction = dto.getId().equals(Long.valueOf(0l)) ? true : false;
 
-        return validateEffectiveDate(dto, isAddAction);
+        return validateEffectiveDate(dto);
     }
 
-    private boolean validateEffectiveDate(final CycleChangeRequestDTO dto, final Boolean isAddAction) {
+    private boolean validateEffectiveDate(final CycleChangeRequestDTO dto) {
 
         Date runDate = dto.getRunDate();
 
@@ -47,12 +47,11 @@ public class CycleChangeEffectiveDateValidator extends Validator {
         List<CycleChangeRequest> nextWeek = repository.findActiveByDivIdAndBetweenRunDatesAsc(dto.getDivId(), runDate,
                 DateUtil.getBufferDate(runDate, BufferDayEnum.PLUS_BUFFER), DateUtil.getExpiryTimestamp());
 
-        return validateCycleChangeEffectiveDate(prevWeek, nextWeek, dto, isAddAction);
+        return validateCycleChangeEffectiveDate(prevWeek, nextWeek, dto);
     }
 
     private Boolean validateCycleChangeEffectiveDate(final List<CycleChangeRequest> beforeCycleChanges,
-            final List<CycleChangeRequest> afterCycleChanges, final CycleChangeRequestDTO dto,
-            final Boolean isAddAction) {
+            final List<CycleChangeRequest> afterCycleChanges, final CycleChangeRequestDTO dto) {
 
         ValidEffectiveDates before = processEffectiveDateFromEarlierEffectiveDates(beforeCycleChanges, dto);
         ValidEffectiveDates after = processEffectiveDateFromLaterEffectiveDates(afterCycleChanges, dto);
@@ -155,6 +154,11 @@ public class CycleChangeEffectiveDateValidator extends Validator {
             final Date prevRunDt = cycle.getRunDate();
 
             if (isEqual(subRunDt, prevRunDt) && isBefore(subEffDt, prevEffDt)) {
+                if (cycle.getRunNumber().equals(RunSequenceEnum.FIRST.getRunSequence())) {
+                    validEffDate.setIsValid(false);
+                    break;
+                }
+
                 validEffDate.addEffectiveDate(subEffDt);
             } else if (isBefore(subEffDt, prevEffDt)) {
                 // if submitted effective date is earlier than the previous cycle's

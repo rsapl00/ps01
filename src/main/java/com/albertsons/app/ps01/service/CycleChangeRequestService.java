@@ -127,6 +127,33 @@ public class CycleChangeRequestService {
     }
 
     @Transactional(readOnly = false)
+    public CycleChangeRequest saveNewCycleChangeRequest(final CycleChangeRequest newCycleChange) {
+        // retrieve cycle change request by run date and not expired.
+        final List<CycleChangeRequest> cycleChangeRequests = cycChangeReqRepository.findByDivIdAndRunDateAndNotExpired(
+                newCycleChange.getDivId(), newCycleChange.getRunDate(), DateUtil.getExpiryTimestamp());
+
+        final List<CycleChangeRequest> newCycleChangeRequests = new ArrayList<>();
+
+        if (cycleChangeRequests.isEmpty()) {
+            newCycleChangeRequests.add(
+                    cycChangeReqRepository.save(createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.FIRST)));
+        } else {
+            cycleChangeRequests.forEach(cycle -> {
+                newCycleChangeRequests.add(cycChangeReqRepository
+                        .save(createNewCycleChangeRequest(newCycleChange, RunSequenceEnum.SECOND)));
+            });
+        }
+
+        if (newCycleChangeRequests.isEmpty()) {
+            // TODO: Messaging template
+            throw new HostPosDatabaseEntryCorruptedException(
+                    "Possible data corruption in Database entry. Look for a one (1) active run date with run number is set to 2.");
+        }
+
+        return newCycleChangeRequests.size() > 0 ? newCycleChangeRequests.get(0) : null;
+    }
+
+    @Transactional(readOnly = false)
     public CycleChangeRequest saveCycleChangeRequest(final CycleChangeRequest newCycleChange) {
 
         // retrieve cycle change request by run date and not expired.

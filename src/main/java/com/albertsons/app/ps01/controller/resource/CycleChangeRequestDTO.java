@@ -31,7 +31,6 @@ public class CycleChangeRequestDTO {
     private String divId;
 
     @NonNull
-    @RundateConstraint
     private Date runDate;
 
     @NonNull

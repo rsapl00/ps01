@@ -53,7 +53,7 @@ public class CycleChangeRequestController {
                         throws URISyntaxException {
 
                 Resource<CycleChangeRequest> resource = assembler.toResource(cycleChangeRequestService
-                                .saveCycleChangeRequest(newCycleChange.getCycleChangeRequest()));
+                                .saveNewCycleChangeRequest(newCycleChange.getCycleChangeRequest()));
 
                 return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
         }

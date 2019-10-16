@@ -46,17 +46,14 @@ public class CycleChangeRunDateValidator extends Validator {
         LocalDate date = dto.getRunDate().toLocalDate();
         LocalDate currentDate = LocalDate.now();
 
-        if (!date.isAfter(currentDate.plusDays(7))) {
+        if (date.isBefore(currentDate.plusDays(7))) {
             return false;
         }
 
         // This will assume that if Id is set to 0 in the request then the request is
         // for new cycle change
-        boolean isAddAction = true;
-        if (dto.getId().equals(Long.valueOf(0l))) {
-            isAddAction = false;
-        }
-
+        final boolean isAddAction = dto.getId().equals(Long.valueOf(0l)) ? true : false;
+        
         if (isAddAction) {
             final List<CycleChangeRequest> cycleChangeRequests = repository.findByDivIdAndRunDateAndNotExpired(
                     dto.getDivId(), dto.getRunDate(), DateUtil.getExpiryTimestamp());
