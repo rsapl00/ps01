@@ -12,4 +12,8 @@ public class CycleChangeNotFoundException extends RuntimeException {
         super(message);
     }
 
+    public CycleChangeNotFoundException() {
+        super("Cycle Change Request not found.");
+    }
+
 }

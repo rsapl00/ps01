@@ -13,7 +13,7 @@ import javax.validation.Payload;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CycleChangeRequestConstraint {
 
-    String message() default "Invalid Cycle Change Request.";
+    String message() default "Invalid Cycle Change Request. Make sure the dates are in chronological order.";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {}; 
 }

@@ -6,9 +6,7 @@ import static com.albertsons.app.ps01.util.DateUtil.*;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.albertsons.app.ps01.domain.CycleChangeRequest;
@@ -346,8 +344,6 @@ public class CycleChangeRequestService {
 
         return cycChangeReqRepository.findById(cycleChangeRequest.getId()).map(toBeUpdatedCycle -> {
 
-            // final List<CycleChangeRequest> existingCycles = map.get(true);
-
             CycleChangeRequest newUpdateRequest = cloneCycleChangeRequest(toBeUpdatedCycle);
             newUpdateRequest.setId(0l); // remove id to create a new record
             newUpdateRequest.setRunDate(cycleChangeRequest.getRunDate());
@@ -355,16 +351,28 @@ public class CycleChangeRequestService {
             newUpdateRequest.setOffsiteIndicator(cycleChangeRequest.getOffsiteIndicator());
 
             if (existingCycles.isEmpty()) {
-                newUpdateRequest = cycChangeReqRepository.save(createNewCycleChangeRequest(newUpdateRequest, RunSequenceEnum.FIRST));
+                newUpdateRequest = cycChangeReqRepository
+                        .save(createNewCycleChangeRequest(newUpdateRequest, RunSequenceEnum.FIRST));
             } else {
 
-                if (isEqual(toBeUpdatedCycle.getRunDate(), newUpdateRequest.getRunDate()) 
-                    && isEqual(toBeUpdatedCycle.getEffectiveDate(), newUpdateRequest.getEffectiveDate())) {
-                    newUpdateRequest = cycChangeReqRepository.save(createNewCycleChangeRequest(newUpdateRequest, 
-                        RunSequenceEnum.getRunSequenceEnum(toBeUpdatedCycle.getRunNumber())));              
-                } else {
-                    newUpdateRequest = cycChangeReqRepository.save(createNewCycleChangeRequest(newUpdateRequest, RunSequenceEnum.SECOND));
-                }
+                // if (isEqual(toBeUpdatedCycle.getRunDate(), newUpdateRequest.getRunDate())) {
+
+                // existingCycles.stream().forEach(cycle -> {
+                // if (cycle.getRunNumber().equals(RunSequenceEnum.SECOND.getRunSequence())
+                // && !cycle.getId().equals(toBeUpdatedCycle.getId())) {
+
+                // if (isAfter(toBeUpdatedCycle.getEffectiveDate(), cycle.getEffectiveDate())) {
+                // throw new InvalidEffectiveDate(
+                // "Effective Date of Run 2 is later than the request's effective date.");
+                // }
+
+                // }
+                // });
+
+                newUpdateRequest = cycChangeReqRepository.save(createNewCycleChangeRequest(newUpdateRequest,
+                        RunSequenceEnum.getRunSequenceEnum(toBeUpdatedCycle.getRunNumber())));
+
+                // }
             }
 
             toBeUpdatedCycle.setExpiryTimestamp(expireNow());
@@ -374,9 +382,10 @@ public class CycleChangeRequestService {
 
             return newUpdateRequest;
 
-        }).orElseThrow(()->
+        }).orElseThrow(() ->
 
-    {
+        {
             throw new CycleChangeNotFoundException("Cycle Change Request not found.");
         });
-}}
+    }
+}
