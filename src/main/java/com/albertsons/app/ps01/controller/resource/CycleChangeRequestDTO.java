@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 import com.albertsons.app.ps01.domain.CycleChangeRequest;
 import com.albertsons.app.ps01.validation.ChronologicalOrderDateConstraint;
 import com.albertsons.app.ps01.validation.CycleChangeRequestConstraint;
-import com.albertsons.app.ps01.validation.RundateConstraint;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
