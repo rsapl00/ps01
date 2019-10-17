@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +31,16 @@ public class HostPostResponseEntityExceptionHandler extends ResponseEntityExcept
                                 Arrays.asList(ex.getMessage()), request.getDescription(false));
 
                 return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        @ResponseBody
+        @ExceptionHandler(AccessDeniedException.class)
+        public final ResponseEntity<Object> handleAccessDeniedException(Exception ex, WebRequest request) throws Exception {
+
+                HostPosExceptionResource exceptionResponse = new HostPosExceptionResource(new Date(),
+                                Arrays.asList(ex.getMessage()), request.getDescription(false));
+
+                return new ResponseEntity<>(exceptionResponse, HttpStatus.UNAUTHORIZED);
         }
 
         @ResponseBody

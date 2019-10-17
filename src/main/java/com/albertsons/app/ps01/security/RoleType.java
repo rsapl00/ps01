@@ -2,6 +2,7 @@ package com.albertsons.app.ps01.security;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -55,5 +56,11 @@ public enum RoleType {
         return Arrays.asList(new SimpleGrantedAuthority(RoleType.USER_ADMIN.getRole()),
                 new SimpleGrantedAuthority(RoleType.USER_RIM.getRole()),
                 new SimpleGrantedAuthority(RoleType.USER_ANONYMOUS.getRole()));
+    }
+
+    public static List<SimpleGrantedAuthority> getGrantedAuthorities(String... groups) {
+        return Arrays.asList(groups).stream().map(group -> {
+            return new SimpleGrantedAuthority(RoleType.getRoleType(group).getRole());
+        }).collect(Collectors.toList());
     }
 }

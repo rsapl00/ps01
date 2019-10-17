@@ -1,12 +1,14 @@
 package com.albertsons.app.ps01;
 
 import com.albertsons.app.ps01.security.CustomAccessDeniedHandler;
+import com.albertsons.app.ps01.security.MySavedRequestAwareAuthenticationSuccessHandler;
 import com.albertsons.app.ps01.security.Ps01CustomAuthenticationFilter;
 // import com.albertsons.app.ps01.security.MySavedRequestAwareAuthenticationSuccessHandler;
 import com.albertsons.app.ps01.security.Ps01CustomAuthenticationProvider;
 import com.albertsons.app.ps01.security.RestAuthenticationEntryPoint;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -29,8 +31,8 @@ public class Ps01SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
-    // @Autowired
-    // private MySavedRequestAwareAuthenticationSuccessHandler mySuccessHandler;
+    @Autowired
+    private MySavedRequestAwareAuthenticationSuccessHandler mySuccessHandler;
     
     @Autowired
     private CustomAccessDeniedHandler accessDeniedHandler;
@@ -38,24 +40,30 @@ public class Ps01SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         
-        http.csrf().disable()
-            .headers()
-            .frameOptions()
-            .disable()
+        http.sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .exceptionHandling()
-            .accessDeniedHandler(accessDeniedHandler)
-            .authenticationEntryPoint(restAuthenticationEntryPoint)
-            .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .csrf().disable()
+            .headers().frameOptions().disable()
             .and()
             .authorizeRequests()
-            .antMatchers("/rest/**")
-            .authenticated()
+            .requestMatchers(EndpointRequest.to("info")).permitAll()
+            .requestMatchers(EndpointRequest.toAnyEndpoint()).hasRole("ADMIN")
+                .antMatchers("/ps01/rest/cyclechanges/approve").hasRole("ADMIN")
+                .antMatchers("/ps01/rest/cyclechanges/reject").hasRole("ADMIN")
+                .antMatchers("/ps01/actuator/").hasRole("ADMIN")
+                // .antMatchers("/ps01/actuator/").permitAll()
+                .antMatchers("/ps01/**").permitAll()
+                .antMatchers("/").permitAll()
+                .antMatchers("/ps01/h2-console/**").permitAll()
+                .anyRequest()
+                .authenticated()
             .and()
+            .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler)
+                .authenticationEntryPoint(restAuthenticationEntryPoint)
+                .and()
             .addFilterBefore(new Ps01CustomAuthenticationFilter(), BasicAuthenticationFilter.class)
-            .logout();   
     }
 
     @Override

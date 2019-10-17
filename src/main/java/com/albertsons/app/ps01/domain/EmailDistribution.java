@@ -17,11 +17,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import lombok.NonNull;
 
-/**
- * 
- * TODO: Implement AutoAware for Audit fields like Created By
- * 
- */
 @Entity
 @Table (name = "PSDIVDST_TABLE")
 @IdClass(EmailDistributionId.class)

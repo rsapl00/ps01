@@ -1,7 +1,5 @@
 package com.albertsons.app.ps01.controller;
 
-import com.albertsons.app.ps01.security.RoleType;
-import com.albertsons.app.ps01.security.User;
 import com.albertsons.app.ps01.service.CycleChangeRequestService;
 
 import org.springframework.stereotype.Controller;

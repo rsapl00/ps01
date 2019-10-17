@@ -1,6 +1,6 @@
 package com.albertsons.app.ps01.validation;
 
-import static com.albertsons.app.ps01.util.DateUtil.*;
+import static com.albertsons.app.ps01.util.DateUtil.isEqual;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -80,9 +80,9 @@ public class CycleChangeRunDateValidator extends Validator {
                     throw new RuntimeException("Run date is not modifiable.");
                 }
                 return cycle;
-            }).orElseThrow(() -> {
-                throw new CycleChangeNotFoundException();
-            });
+            }).orElseThrow(
+                () -> new CycleChangeNotFoundException("Cycle Change not found.")
+            );
         }
 
         return true;

@@ -29,7 +29,7 @@ public class Ps01CustomAuthenticationFilter extends OncePerRequestFilter {
             throw new AccessDeniedException("Access Denied for " + xUsername);
         }
 
-        Authentication auth = new Ps01CustomAuthenticationToken(RoleType.getGrantedAuthorities(), user);
+        Authentication auth = new Ps01CustomAuthenticationToken(RoleType.getGrantedAuthorities(xGroup), user);
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);

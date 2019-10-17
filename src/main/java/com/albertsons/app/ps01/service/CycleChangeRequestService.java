@@ -115,11 +115,7 @@ public class CycleChangeRequestService {
     }
 
     public CycleChangeRequest findById(final Long id) {
-        return cycChangeReqRepository.findById(id).map(cycle -> {
-            return cycle;
-        }).orElseThrow(() -> {
-            throw new CycleChangeNotFoundException("Cycle Change Request not found.");
-        });
+        return cycChangeReqRepository.findById(id).orElseThrow(() -> new CycleChangeNotFoundException("Cycle Change not found."));
     }
 
     public List<CycleChangeRequest> findAll() {
@@ -299,8 +295,7 @@ public class CycleChangeRequestService {
 
             return newUpdateRequest;
 
-        }).orElseThrow(() -> {
-            throw new CycleChangeNotFoundException("Cycle Change Request not found.");
-        });
+        }).orElseThrow(() -> new CycleChangeNotFoundException("Cycle Change not found."));
+        
     }
 }
