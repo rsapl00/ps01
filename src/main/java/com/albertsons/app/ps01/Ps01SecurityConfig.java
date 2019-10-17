@@ -63,7 +63,7 @@ public class Ps01SecurityConfig extends WebSecurityConfigurerAdapter {
                 .accessDeniedHandler(accessDeniedHandler)
                 .authenticationEntryPoint(restAuthenticationEntryPoint)
                 .and()
-            .addFilterBefore(new Ps01CustomAuthenticationFilter(), BasicAuthenticationFilter.class)
+            .addFilterBefore(new Ps01CustomAuthenticationFilter(), BasicAuthenticationFilter.class);
     }
 
     @Override
