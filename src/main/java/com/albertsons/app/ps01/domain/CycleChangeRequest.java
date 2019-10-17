@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -17,6 +18,7 @@ import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +29,7 @@ import lombok.NonNull;
  */
 @Data
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @ChronologicalOrderDateConstraint.List({
         @ChronologicalOrderDateConstraint(startDate = "runDate", endDate = "effectiveDate", message = "Effective date should be later than run date.") })
 @Entity

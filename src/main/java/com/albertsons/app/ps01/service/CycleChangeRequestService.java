@@ -1,7 +1,10 @@
 package com.albertsons.app.ps01.service;
 
-import static com.albertsons.app.ps01.util.CycleScheduleUtility.*;
-import static com.albertsons.app.ps01.util.DateUtil.*;
+import static com.albertsons.app.ps01.util.CycleScheduleUtility.cloneCycleChangeRequest;
+import static com.albertsons.app.ps01.util.CycleScheduleUtility.createNewCycleChangeRequest;
+import static com.albertsons.app.ps01.util.CycleScheduleUtility.isRunDateExists;
+import static com.albertsons.app.ps01.util.DateUtil.expireNow;
+import static com.albertsons.app.ps01.util.DateUtil.getExpiryTimestamp;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -112,7 +115,9 @@ public class CycleChangeRequestService {
     }
 
     public CycleChangeRequest findById(final Long id) {
-        return cycChangeReqRepository.findById(id).orElseThrow(() -> {
+        return cycChangeReqRepository.findById(id).map(cycle -> {
+            return cycle;
+        }).orElseThrow(() -> {
             throw new CycleChangeNotFoundException("Cycle Change Request not found.");
         });
     }

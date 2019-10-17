@@ -1,16 +1,14 @@
 package com.albertsons.app.ps01.security;
 
+import java.util.Collection;
+
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 
 public class Ps01CustomAuthenticationToken extends AbstractAuthenticationToken {
 
     private static final long serialVersionUID = -2559357568133352085L;
     private User authenticatedUser;
-
-    public Ps01CustomAuthenticationToken(User authenticatedUser) {
-        super(RoleType.getGrantedAuthorities());
-        this.authenticatedUser = authenticatedUser;
-    }
 
     @Override
     public Object getCredentials() {
@@ -23,6 +21,12 @@ public class Ps01CustomAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public Object getPrincipal() {
         return authenticatedUser;
+    }
+
+    public Ps01CustomAuthenticationToken(Collection<? extends GrantedAuthority> authorities, User authenticatedUser) {
+        super(authorities);
+        this.authenticatedUser = authenticatedUser;
+        setAuthenticated(authenticatedUser.isAuthenticated());
     }
 
 }

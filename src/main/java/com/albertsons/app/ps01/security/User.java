@@ -81,11 +81,16 @@ public class User implements Authentication {
 
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+        
     }
 
     public Boolean isUserValid() {
-        if ((username == null && username.isEmpty()) || (division == null && division.isEmpty())
-                || (RoleType.USER_UNAUTHORIZED == role)) {
+        if (username == null || division == null) {
+            return false;
+        }
+
+        if ((username != null && username.isEmpty()) || (division != null && division.isEmpty())
+                || (RoleType.USER_ANONYMOUS == role)) {
             return false;
         }
 

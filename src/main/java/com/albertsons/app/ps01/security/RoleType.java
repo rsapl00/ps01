@@ -7,7 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public enum RoleType {
 
-    USER_UNAUTHORIZED("Unauthorized user.", "UNAUTHORIZED"), USER_RIM("ps01.user.rim", "ROLE_RIM"),
+    USER_ANONYMOUS("Anonymous user.", "ROLE_ANONYMOUS"), USER_RIM("ps01.user.rim", "ROLE_RIM"),
     USER_ADMIN("ps01.user.admin", "ROLE_ADMIN");
 
     private String memberOf;
@@ -15,6 +15,7 @@ public enum RoleType {
 
     private RoleType(String memberOf, String role) {
         this.memberOf = memberOf;
+        this.role = role;
     }
 
     public String getMemberOf() {
@@ -34,7 +35,7 @@ public enum RoleType {
     }
 
     public static RoleType getDefaultRoleType() {
-        return RoleType.USER_UNAUTHORIZED;
+        return RoleType.USER_ANONYMOUS;
     }
 
     public static RoleType getRoleType(String memberOf) {
@@ -52,6 +53,7 @@ public enum RoleType {
 
     public static List<SimpleGrantedAuthority> getGrantedAuthorities() {
         return Arrays.asList(new SimpleGrantedAuthority(RoleType.USER_ADMIN.getRole()),
-                new SimpleGrantedAuthority(RoleType.USER_RIM.getRole()));
+                new SimpleGrantedAuthority(RoleType.USER_RIM.getRole()),
+                new SimpleGrantedAuthority(RoleType.USER_ANONYMOUS.getRole()));
     }
 }
