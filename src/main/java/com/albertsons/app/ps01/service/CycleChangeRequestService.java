@@ -111,7 +111,7 @@ public class CycleChangeRequestService {
         return newSchedules;
     }
 
-    public CycleChangeRequest findById(final Long id) throws RuntimeException {
+    public CycleChangeRequest findById(final Long id) {
         return cycChangeReqRepository.findById(id).orElseThrow(() -> {
             throw new CycleChangeNotFoundException("Cycle Change Request not found.");
         });
@@ -264,7 +264,7 @@ public class CycleChangeRequestService {
     }
 
     @Transactional(readOnly = false)
-    public CycleChangeRequest updateCycleChangeRequest(final CycleChangeRequest cycleChangeRequest) throws RuntimeException {
+    public CycleChangeRequest updateCycleChangeRequest(final CycleChangeRequest cycleChangeRequest) {
 
         final List<CycleChangeRequest> existingCycles = cycChangeReqRepository.findByDivIdAndRunDateAndNotExpired(
                 cycleChangeRequest.getDivId(), cycleChangeRequest.getRunDate(), DateUtil.getExpiryTimestamp());

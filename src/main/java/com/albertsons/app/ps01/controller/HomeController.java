@@ -1,7 +1,7 @@
 package com.albertsons.app.ps01.controller;
 
-import com.albertsons.app.ps01.controller.resource.RoleType;
-import com.albertsons.app.ps01.controller.resource.User;
+import com.albertsons.app.ps01.security.RoleType;
+import com.albertsons.app.ps01.security.User;
 import com.albertsons.app.ps01.service.CycleChangeRequestService;
 
 import org.springframework.stereotype.Controller;
@@ -21,13 +21,13 @@ public class HomeController {
     @GetMapping("/home")
     public String login(Model model) {
 
-        User user = new User();
-        user.setUsername("rsapl00");
-        user.setEmail("rsapl00@safeway.com");
-        user.setDivision("10");
-        user.setRoleType(RoleType.USER_ADMIN);
+        // User user = new User();
+        // user.setUsername("rsapl00");
+        // user.setEmail("rsapl00@safeway.com");
+        // user.setDivision("10");
+        // user.setRole(RoleType.USER_ADMIN);
 
-        model.addAttribute("user", user);
+        // model.addAttribute("user", user);
 
         //cycleChangeRequestService.generateCycleChangeRequest("19", java.sql.Date.valueOf("2019-9-15") , java.sql.Date.valueOf("2019-9-29"));
 
