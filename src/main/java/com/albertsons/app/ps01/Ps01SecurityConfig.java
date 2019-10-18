@@ -3,7 +3,6 @@ package com.albertsons.app.ps01;
 import com.albertsons.app.ps01.exception.CustomAccessDeniedHandler;
 import com.albertsons.app.ps01.security.MySavedRequestAwareAuthenticationSuccessHandler;
 import com.albertsons.app.ps01.security.Ps01CustomAuthenticationFilter;
-// import com.albertsons.app.ps01.security.MySavedRequestAwareAuthenticationSuccessHandler;
 import com.albertsons.app.ps01.security.Ps01CustomAuthenticationProvider;
 import com.albertsons.app.ps01.security.RestAuthenticationEntryPoint;
 
@@ -52,16 +51,13 @@ public class Ps01SecurityConfig extends WebSecurityConfigurerAdapter {
                 .accessDeniedHandler(accessDeniedHandler)
                 .authenticationEntryPoint(restAuthenticationEntryPoint)
             .and()
-            .authenticationProvider(authenticationProvider)
+            // .authenticationProvider(authenticationProvider)
             .authorizeRequests()
-                //.requestMatchers(EndpointRequest.to("info")).permitAll()
                 .requestMatchers(EndpointRequest.toAnyEndpoint()).hasAnyRole("ADMIN")
                 .antMatchers("/rest/cyclechanges/approve").hasRole("ADMIN")
                 .antMatchers("/rest/cyclechanges/reject").hasRole("ADMIN")
                 .antMatchers("/rest/**").hasAnyRole("ADMIN", "RIM")
                 .antMatchers("/home").hasAnyRole("ADMIN", "RIM")
-                // .anyRequest().permitAll()
-                // .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
             .and()
                 .addFilterBefore(new Ps01CustomAuthenticationFilter(), BasicAuthenticationFilter.class)
