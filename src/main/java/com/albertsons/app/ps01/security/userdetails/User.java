@@ -1,5 +1,6 @@
-package com.albertsons.app.ps01.security;
+package com.albertsons.app.ps01.security.userdetails;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.springframework.security.core.Authentication;
@@ -22,10 +23,17 @@ public class User implements Authentication {
     }
 
     public User(String username, String division, String group) {
+        
         this.username = username;
         this.email = username + EMAIL_DOMAIN;
         this.division = division;
-        this.role = RoleType.getRoleType(group);
+        
+        if (username == null || "".equals(username) || division == null || "".equals(division)) {
+            this.role = RoleType.USER_ANONYMOUS;
+        } else {
+            this.role = RoleType.getRoleType(group);
+        }
+
     }
 
     @NonNull
@@ -47,7 +55,7 @@ public class User implements Authentication {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return RoleType.getGrantedAuthorities();
+        return RoleType.getGrantedAuthorities(Arrays.asList(role));
     }
 
     /**
@@ -81,16 +89,12 @@ public class User implements Authentication {
 
     @Override
     public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
-        
+
     }
 
     public Boolean isUserValid() {
-        if (username == null || division == null) {
-            return false;
-        }
-
-        if ((username != null && username.isEmpty()) || (division != null && division.isEmpty())
-                || (RoleType.USER_ANONYMOUS == role)) {
+        if (username == null || "".equals(username) || division == null || "".equals(division)
+                || RoleType.USER_ANONYMOUS == role) {
             return false;
         }
 

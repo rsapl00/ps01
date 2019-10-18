@@ -2,7 +2,7 @@ package com.albertsons.app.ps01.auditing;
 
 import java.util.Optional;
 
-import com.albertsons.app.ps01.security.User;
+import com.albertsons.app.ps01.security.userdetails.User;
 
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.context.SecurityContextHolder;

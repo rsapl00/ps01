@@ -1,7 +1,12 @@
 package com.albertsons.app.ps01.controller;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.albertsons.app.ps01.security.userdetails.User;
 import com.albertsons.app.ps01.service.CycleChangeRequestService;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,17 +22,11 @@ public class HomeController {
     }
 
     @GetMapping("/home")
-    public String login(Model model) {
+    public String login(HttpServletRequest request, HttpServletResponse response, Model model) {
 
-        // User user = new User();
-        // user.setUsername("rsapl00");
-        // user.setEmail("rsapl00@safeway.com");
-        // user.setDivision("10");
-        // user.setRole(RoleType.USER_ADMIN);
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // model.addAttribute("user", user);
-
-        //cycleChangeRequestService.generateCycleChangeRequest("19", java.sql.Date.valueOf("2019-9-15") , java.sql.Date.valueOf("2019-9-29"));
+        model.addAttribute("user", user);
 
         return "home";
     }

@@ -7,7 +7,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.security.access.AccessDeniedException;
+import com.albertsons.app.ps01.security.userdetails.RoleType;
+import com.albertsons.app.ps01.security.userdetails.User;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -22,12 +24,7 @@ public class Ps01CustomAuthenticationFilter extends OncePerRequestFilter {
         String xGroup = request.getHeader("SWY_GROUP");
         String xDivision = request.getHeader("SWY_DIV");
 
-        //HttpHeaderMap header = new HttpHeaderMap(xUsername, xGroup, xDivision);
         User user = new User(xUsername, xDivision, xGroup);
-
-        if (!user.isAuthenticated()) {
-            throw new AccessDeniedException("Access Denied for " + xUsername);
-        }
 
         Authentication auth = new Ps01CustomAuthenticationToken(RoleType.getGrantedAuthorities(xGroup), user);
         SecurityContextHolder.getContext().setAuthentication(auth);

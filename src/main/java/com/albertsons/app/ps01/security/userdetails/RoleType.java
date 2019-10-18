@@ -1,4 +1,4 @@
-package com.albertsons.app.ps01.security;
+package com.albertsons.app.ps01.security.userdetails;
 
 import java.util.Arrays;
 import java.util.List;
@@ -54,13 +54,19 @@ public enum RoleType {
 
     public static List<SimpleGrantedAuthority> getGrantedAuthorities() {
         return Arrays.asList(new SimpleGrantedAuthority(RoleType.USER_ADMIN.getRole()),
-                new SimpleGrantedAuthority(RoleType.USER_RIM.getRole()),
-                new SimpleGrantedAuthority(RoleType.USER_ANONYMOUS.getRole()));
+                new SimpleGrantedAuthority(RoleType.USER_RIM.getRole()));
+                // new SimpleGrantedAuthority(RoleType.USER_ANONYMOUS.getRole()));
     }
 
     public static List<SimpleGrantedAuthority> getGrantedAuthorities(String... groups) {
         return Arrays.asList(groups).stream().map(group -> {
             return new SimpleGrantedAuthority(RoleType.getRoleType(group).getRole());
+        }).collect(Collectors.toList());
+    }
+
+    public static List<SimpleGrantedAuthority> getGrantedAuthorities(List<RoleType> groups) {
+        return groups.stream().map(group -> {
+            return new SimpleGrantedAuthority(group.getRole());
         }).collect(Collectors.toList());
     }
 }

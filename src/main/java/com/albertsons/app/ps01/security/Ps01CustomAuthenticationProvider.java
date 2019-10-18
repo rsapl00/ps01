@@ -1,5 +1,7 @@
 package com.albertsons.app.ps01.security;
 
+import com.albertsons.app.ps01.security.userdetails.User;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -13,11 +15,14 @@ public class Ps01CustomAuthenticationProvider implements AuthenticationProvider 
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         
         Ps01CustomAuthenticationToken token = (Ps01CustomAuthenticationToken) authentication;
-        if (!token.isAuthenticated()) {
-            throw new AccessDeniedException("Access Denied.");
+
+        User user = (User) token.getPrincipal();
+
+        if (!(token.isAuthenticated())) {
+            throw new AccessDeniedException("Access Denied for " + user.getName());
         }
 
-        return (User) token.getPrincipal();
+        return user;
     }
 
     @Override
