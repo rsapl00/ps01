@@ -62,7 +62,10 @@ public class Ps01SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
                 .addFilterBefore(new Ps01CustomAuthenticationFilter(), BasicAuthenticationFilter.class)
             .formLogin().disable()
-            .httpBasic().disable();
+            .httpBasic().disable()
+            .logout()
+            .invalidateHttpSession(true)
+            .deleteCookies("JSESSIONID");
     }
 
     @Override
