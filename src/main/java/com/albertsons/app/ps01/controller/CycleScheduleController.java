@@ -12,7 +12,6 @@ import com.albertsons.app.ps01.domain.CycleChangeRequest;
 import com.albertsons.app.ps01.service.CycleScheduleService;
 
 import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.Resources;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
