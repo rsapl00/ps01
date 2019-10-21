@@ -23,9 +23,11 @@ import com.albertsons.app.ps01.exception.CycleChangeRequestCancelException;
 import com.albertsons.app.ps01.exception.HostPosDatabaseEntryCorruptedException;
 import com.albertsons.app.ps01.repository.CycleChangeRequestRepository;
 import com.albertsons.app.ps01.repository.CycleScheduleRepository;
+import com.albertsons.app.ps01.security.userdetails.User;
 import com.albertsons.app.ps01.util.CycleScheduleUtility;
 import com.albertsons.app.ps01.util.DateUtil;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -194,6 +196,9 @@ public class CycleChangeRequestService {
 
     @Transactional(readOnly = false)
     public List<CycleChangeRequest> cancelCycleChangeRequest(final List<Long> ids) {
+
+        final User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         return searchCycleChangesByIds(ids).stream().map(cycle -> {
 
             if (cycle.getChangeStatusName().equals(ChangeStatusEnum.APPROVED.getChangeStatus())
@@ -201,6 +206,10 @@ public class CycleChangeRequestService {
                     || cycle.getChangeStatusName().equals(ChangeStatusEnum.BASE.getChangeStatus())) {
                 throw new CycleChangeRequestCancelException(
                         "Cancelation error: Only SAVED/FOR APPROVAL can be canceled.");
+            }
+
+            if (!cycle.getCreateUserId().equals(user.getUsername())) {
+                throw new CycleChangeRequestCancelException("You can't cancel other user's request.");
             }
 
             CycleChangeRequest canceled = cloneCycleChangeRequest(cycle);

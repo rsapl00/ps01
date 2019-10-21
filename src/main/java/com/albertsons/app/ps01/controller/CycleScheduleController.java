@@ -12,6 +12,7 @@ import com.albertsons.app.ps01.domain.CycleChangeRequest;
 import com.albertsons.app.ps01.service.CycleScheduleService;
 
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceAssembler;
 import org.springframework.hateoas.Resources;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +27,8 @@ public class CycleScheduleController {
     private CycleScheduleService cycleScheduleService;
     private CycleScheduleResourceAssembler assembler;
 
-    public CycleScheduleController(CycleScheduleService cycleScheduleService, CycleScheduleResourceAssembler assembler) {
+    public CycleScheduleController(CycleScheduleService cycleScheduleService,
+            CycleScheduleResourceAssembler assembler) {
         this.cycleScheduleService = cycleScheduleService;
         this.assembler = assembler;
     }
@@ -42,5 +44,15 @@ public class CycleScheduleController {
         return new Resources<>(cycleSchedules,
                 linkTo(methodOn(CycleScheduleController.class).getBaseCycleSchedules(divisionId, startDate, endDate))
                         .withSelfRel());
+    }
+
+    @GetMapping("/divisions")
+    public Resources<Resource<String>> getDivisions() {
+        List<Resource<String>> divisions = cycleScheduleService.findDistinctDivision().stream()
+                .map(division -> new Resource<>(division,
+                        linkTo(methodOn(CycleScheduleController.class).getDivisions()).withSelfRel()))
+                .collect(Collectors.toList());
+
+        return new Resources<>(divisions, linkTo(methodOn(CycleScheduleController.class).getDivisions()).withSelfRel());
     }
 }

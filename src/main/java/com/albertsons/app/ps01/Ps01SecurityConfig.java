@@ -1,7 +1,6 @@
 package com.albertsons.app.ps01;
 
 import com.albertsons.app.ps01.exception.CustomAccessDeniedHandler;
-import com.albertsons.app.ps01.security.MySavedRequestAwareAuthenticationSuccessHandler;
 import com.albertsons.app.ps01.security.Ps01CustomAuthenticationFilter;
 import com.albertsons.app.ps01.security.Ps01CustomAuthenticationProvider;
 import com.albertsons.app.ps01.security.RestAuthenticationEntryPoint;
@@ -31,8 +30,8 @@ public class Ps01SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
-    @Autowired
-    private MySavedRequestAwareAuthenticationSuccessHandler mySuccessHandler;
+    // @Autowired
+    // private MySavedRequestAwareAuthenticationSuccessHandler mySuccessHandler;
     
     @Autowired
     private CustomAccessDeniedHandler accessDeniedHandler;
@@ -64,6 +63,7 @@ public class Ps01SecurityConfig extends WebSecurityConfigurerAdapter {
             .formLogin().disable()
             .httpBasic().disable()
             .logout()
+            .logoutSuccessUrl("/")
             .invalidateHttpSession(true)
             .deleteCookies("JSESSIONID");
     }
