@@ -154,7 +154,7 @@ public class CycleChangeRequestService {
     @Transactional(readOnly = false)
     public CycleChangeRequest approveCycleChangeRequest(final Long id) {
 
-        // TODO: validate if user has the authority to approve
+        // TODO: send email notification
 
         return cycChangeReqRepository.findById(id).map(existingCycleChange -> {
             return returnApprovedOrRejectCycleChange(ChangeStatusEnum.APPROVED, existingCycleChange);
@@ -168,6 +168,7 @@ public class CycleChangeRequestService {
 
         return cycChangeReqRepository.findById(id).map(forReject -> {
             return returnApprovedOrRejectCycleChange(ChangeStatusEnum.REJECTED, forReject);
+            // TODO: send email notification
             // TODO: messaging template
         }).orElseThrow(
                 () -> new CycleChangeNotFoundException("Can't reject cycle change as the record doesn't exists."));
@@ -177,6 +178,7 @@ public class CycleChangeRequestService {
     public List<CycleChangeRequest> approveMultipleCycleChangeRequest(final List<Long> ids) {
         return searchCycleChangesByIds(ids).stream().map(cycle -> {
             return returnApprovedOrRejectCycleChange(ChangeStatusEnum.APPROVED, cycle);
+            // TODO: send email notification
         }).collect(Collectors.toList());
     }
 
@@ -184,6 +186,7 @@ public class CycleChangeRequestService {
     public List<CycleChangeRequest> rejectMultipleCycleChangeRequest(final List<Long> ids) {
         return searchCycleChangesByIds(ids).stream().map(cycle -> {
             return returnApprovedOrRejectCycleChange(ChangeStatusEnum.REJECTED, cycle);
+            // TODO: send email notification
         }).collect(Collectors.toList());
     }
 
@@ -191,6 +194,7 @@ public class CycleChangeRequestService {
     public List<CycleChangeRequest> forApprovalCycleChangeRequest(final List<Long> ids) {
         return searchCycleChangesByIds(ids).stream().map(cycle -> {
             return returnApprovedOrRejectCycleChange(ChangeStatusEnum.FOR_APPROVAL, cycle);
+            // TODO: send email notification
         }).collect(Collectors.toList());
     }
 
